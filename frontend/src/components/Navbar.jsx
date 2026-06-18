@@ -64,38 +64,40 @@ const Navbar = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           
           {/* Cart Trigger */}
-          <button 
-            className="btn btn-glass btn-circle" 
-            onClick={toggleCart} 
-            style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            title="Open Cart"
-          >
-            <ShoppingBag size={20} />
-            {cartCount > 0 && (
-              <span 
-                className="badge badge-primary" 
-                style={{ 
-                  position: 'absolute', 
-                  top: '-4px', 
-                  right: '-4px', 
-                  minWidth: '20px', 
-                  height: '20px', 
-                  borderRadius: '10px', 
-                  padding: '0 4px', 
-                  fontSize: '0.7rem', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center',
-                  background: 'var(--primary-gradient)',
-                  color: '#fff',
-                  border: 'none',
-                  animation: 'pulseGlow 2s infinite'
-                }}
-              >
-                {cartCount}
-              </span>
-            )}
-          </button>
+          {user?.role !== 'admin' && (
+            <button 
+              className="btn btn-glass btn-circle" 
+              onClick={toggleCart} 
+              style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              title="Open Cart"
+            >
+              <ShoppingBag size={20} />
+              {cartCount > 0 && (
+                <span 
+                  className="badge badge-primary" 
+                  style={{ 
+                    position: 'absolute', 
+                    top: '-4px', 
+                    right: '-4px', 
+                    minWidth: '20px', 
+                    height: '20px', 
+                    borderRadius: '10px', 
+                    padding: '0 4px', 
+                    fontSize: '0.7rem', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    background: 'var(--primary-gradient)',
+                    color: '#fff',
+                    border: 'none',
+                    animation: 'pulseGlow 2s infinite'
+                  }}
+                >
+                  {cartCount}
+                </span>
+              )}
+            </button>
+          )}
 
           {/* User Auth Buttons (Desktop) */}
           <div style={{ display: 'none', position: 'relative' }} className="desktop-menu">

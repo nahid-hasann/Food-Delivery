@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ShoppingBag, Clock, CheckCircle, Truck, Utensils, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 
 // Mock orders for testing order status and payment status UI
 const MOCK_ORDERS = [
@@ -30,10 +31,30 @@ const MOCK_ORDERS = [
 
 const MyOrders = () => {
   const { user } = useAuth();
+  const { showToast } = useToast();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Check if redirected from PayHere sandbox with success parameters
+    const params = new URLSearchParams(window.location.search);
+    const paymentStatusParam = params.get('payment');
+    const orderIdParam = params.get('orderId');
+
+    const handlePaymentRedirect = async () => {
+      if (paymentStatusParam === 'success' && orderIdParam) {
+        try {
+          await fetch(`http://localhost:5005/api/orders/simulate-success/${orderIdParam}`, {
+            method: 'POST'
+          });
+          // Clean the query parameters from URL without reloading
+          window.history.replaceState({}, document.title, window.location.pathname);
+        } catch (error) {
+          console.error('Failed to trigger mock payment notification:', error);
+        }
+      }
+    };
+
     // Fetch orders from backend
     const fetchOrders = async () => {
       try {
@@ -44,7 +65,7 @@ const MyOrders = () => {
           return;
         }
 
-        const response = await fetch('http://localhost:5000/api/orders/my-orders', {
+        const response = await fetch('http://localhost:5005/api/orders/my-orders', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -64,8 +85,43 @@ const MyOrders = () => {
       }
     };
 
-    fetchOrders();
+    const init = async () => {
+      await handlePaymentRedirect();
+      await fetchOrders();
+    };
+
+    init();
   }, [user]);
+
+  const handleCancelOrder = async (orderId) => {
+    const confirmCancel = window.confirm("Are you sure you want to cancel this order?");
+    if (!confirmCancel) return;
+
+    try {
+      const token = localStorage.getItem('quickbite_token');
+      const response = await fetch(`http://localhost:5005/api/orders/${orderId}/cancel`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        setOrders(prev => 
+          prev.map(order => 
+            order._id === orderId ? { ...order, orderStatus: 'Cancelled' } : order
+          )
+        );
+        showToast('Order cancelled successfully.', 'success');
+      } else {
+        const errorData = await response.json();
+        showToast(errorData.message || 'Failed to cancel order.', 'error');
+      }
+    } catch (err) {
+      console.error('Error cancelling order:', err);
+      showToast('Error cancelling order.', 'error');
+    }
+  };
 
   const getStatusIcon = (status) => {
     switch (status) {
@@ -73,6 +129,7 @@ const MyOrders = () => {
       case 'Cooking': return <Utensils size={16} color="var(--star-color)" />;
       case 'Out for Delivery': return <Truck size={16} color="#00b4d8" />;
       case 'Delivered': return <CheckCircle size={16} color="var(--success)" />;
+      case 'Cancelled': return <AlertCircle size={16} color="var(--warning)" />;
       default: return <AlertCircle size={16} />;
     }
   };
@@ -83,6 +140,7 @@ const MyOrders = () => {
       case 'Cooking': return <span className="badge" style={{ background: 'rgba(255, 183, 3, 0.15)', color: 'var(--star-color)', border: '1px solid rgba(255, 183, 3, 0.3)' }}>Cooking</span>;
       case 'Out for Delivery': return <span className="badge" style={{ background: 'rgba(0, 180, 216, 0.15)', color: '#00b4d8', border: '1px solid rgba(0, 180, 216, 0.3)' }}>Out for Delivery</span>;
       case 'Delivered': return <span className="badge badge-success">Delivered</span>;
+      case 'Cancelled': return <span className="badge badge-danger">Cancelled</span>;
       default: return <span className="badge">{status}</span>;
     }
   };
@@ -155,10 +213,31 @@ const MyOrders = () => {
 
               {/* Order Footer */}
               <div className="flex-row-center" style={{ borderTop: '1px solid var(--border-glass)', paddingTop: '16px', marginTop: '16px' }}>
-                <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Total Amount Paid</span>
-                <span style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--primary)' }}>
-                  ${order.totalAmount.toFixed(2)}
-                </span>
+                {order.orderStatus === 'Pending' ? (
+                  <button 
+                    onClick={() => handleCancelOrder(order._id)}
+                    className="btn btn-glass"
+                    style={{ 
+                      padding: '8px 16px', 
+                      fontSize: '0.85rem', 
+                      color: 'var(--warning)', 
+                      borderColor: 'rgba(247, 37, 133, 0.3)',
+                      borderRadius: '8px'
+                    }}
+                  >
+                    Cancel Order
+                  </button>
+                ) : (
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                    {order.orderStatus === 'Cancelled' ? 'Order Cancelled' : 'In Progress (Non-cancellable)'}
+                  </span>
+                )}
+                <div>
+                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginRight: '8px' }}>Total Amount</span>
+                  <span style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--primary)' }}>
+                    ${order.totalAmount.toFixed(2)}
+                  </span>
+                </div>
               </div>
 
             </div>

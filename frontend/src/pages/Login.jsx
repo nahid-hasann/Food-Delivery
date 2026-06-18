@@ -4,7 +4,7 @@ import { Mail, Lock, LogIn, ArrowRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
-  const { login } = useAuth();
+  const { login, register } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -47,38 +47,41 @@ const Login = () => {
   const handleQuickLogin = async (role) => {
     setError('');
     setLoading(true);
-    let emailInput = '';
-    let passwordInput = 'password123';
     
-    if (role === 'admin') {
-      emailInput = 'admin@quickbite.com';
-    } else {
-      emailInput = 'customer@quickbite.com';
-    }
+    // Credentials provided by the user
+    const emailInput = role === 'admin' ? 'bikelovernahid@gmail.com' : 'mhnahid1w3r@gmail.com';
+    const passwordInput = 'Aa123456';
+    const nameInput = role === 'admin' ? 'Bike Lover Nahid (Admin)' : 'MH Nahid (Customer)';
+    const phoneInput = '+8801700000000';
     
     setEmail(emailInput);
     setPassword(passwordInput);
 
-    // Normally this would hit the API, we can trigger the standard submit
+    // Try logging in with the credentials
     const result = await login(emailInput, passwordInput);
-    setLoading(false);
     
     if (result.success) {
+      setLoading(false);
       if (role === 'admin') {
         navigate('/admin');
       } else {
         navigate('/');
       }
     } else {
-      // If API fails (since database is not set up yet), we can mock it here for testing UI!
-      const mockUser = role === 'admin' 
-        ? { name: 'Admin User', email: 'admin@quickbite.com', role: 'admin', phone: '123456789' }
-        : { name: 'John Doe', email: 'customer@quickbite.com', role: 'customer', phone: '987654321' };
+      // If login fails (user does not exist in DB), register the user first!
+      console.log('User does not exist in Atlas database. Registering silently...');
+      const registerResult = await register(nameInput, emailInput, passwordInput, phoneInput, role);
+      setLoading(false);
       
-      localStorage.setItem('quickbite_token', 'mock_jwt_token_for_ui');
-      localStorage.setItem('quickbite_user', JSON.stringify(mockUser));
-      // Trigger context updates manually or just reload
-      window.location.reload(); 
+      if (registerResult.success) {
+        if (role === 'admin') {
+          navigate('/admin');
+        } else {
+          navigate('/');
+        }
+      } else {
+        setError(registerResult.error || 'Failed to authenticate demo credentials');
+      }
     }
   };
 

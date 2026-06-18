@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LayoutDashboard, ShoppingBag, Plus, Trash, Edit, RefreshCw, DollarSign, Users, Award, ShieldAlert } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-// Mock data for Admin Panel Preview
+// Mock data for Admin Panel Preview (Fallback)
 const MOCK_ORDERS = [
   {
     _id: 'ORD-82910',
@@ -37,9 +37,9 @@ const MOCK_ORDERS = [
 ];
 
 const MOCK_FOODS = [
-  { _id: '1', name: 'Premium Pepperoni Pizza', price: 12.99, category: 'Pizza', image: 'https://images.unsplash.com/photo-1628840042765-356cda07504e?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3' },
-  { _id: '2', name: 'Truffle Mushroom Burger', price: 9.49, category: 'Burger', image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3' },
-  { _id: '3', name: 'Velvet Chocolate Fudge Cake', price: 6.99, category: 'Cake', image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3' }
+  { _id: '1', name: 'Premium Pepperoni Pizza', price: 12.99, category: 'Pizza', image: 'https://images.unsplash.com/photo-1628840042765-356cda07504e?w=500&auto=format&fit=crop&q=60' },
+  { _id: '2', name: 'Truffle Mushroom Burger', price: 9.49, category: 'Burger', image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&auto=format&fit=crop&q=60' },
+  { _id: '3', name: 'Velvet Chocolate Fudge Cake', price: 6.99, category: 'Cake', image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500&auto=format&fit=crop&q=60' }
 ];
 
 const AdminDashboard = () => {
@@ -47,46 +47,194 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('Overview');
   
   // State variables (populated with mock values initially)
-  const [orders, setOrders] = useState(MOCK_ORDERS);
-  const [foods, setFoods] = useState(MOCK_FOODS);
+  const [orders, setOrders] = useState([]);
+  const [foods, setFoods] = useState([]);
   
-  // Add food item form state
+  // Add/Edit food item form state
   const [newItemName, setNewItemName] = useState('');
   const [newItemPrice, setNewItemPrice] = useState('');
   const [newItemCategory, setNewItemCategory] = useState('Pizza');
   const [newItemImage, setNewItemImage] = useState('');
+  const [newItemDescription, setNewItemDescription] = useState('');
+  const [editingFoodId, setEditingFoodId] = useState(null);
+
+  // Fetch orders and foods from backend
+  useEffect(() => {
+    if (!user || user.role !== 'admin') return;
+    
+    const token = localStorage.getItem('quickbite_token');
+
+    const fetchOrders = async () => {
+      try {
+        const response = await fetch('http://localhost:5005/api/orders', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setOrders(data);
+        } else {
+          setOrders(MOCK_ORDERS);
+        }
+      } catch (err) {
+        console.error('Failed to fetch orders, loading fallbacks.', err);
+        setOrders(MOCK_ORDERS);
+      }
+    };
+
+    const fetchFoods = async () => {
+      try {
+        const response = await fetch('http://localhost:5005/api/foods');
+        if (response.ok) {
+          const data = await response.json();
+          setFoods(data);
+        } else {
+          setFoods(MOCK_FOODS);
+        }
+      } catch (err) {
+        console.error('Failed to fetch foods, loading fallbacks.', err);
+        setFoods(MOCK_FOODS);
+      }
+    };
+
+    fetchOrders();
+    fetchFoods();
+  }, [user, activeTab]);
 
   // Handle Order Status Update
-  const handleUpdateStatus = (orderId, newStatus) => {
-    setOrders(prev => 
-      prev.map(order => 
-        order._id === orderId ? { ...order, orderStatus: newStatus } : order
-      )
-    );
+  const handleUpdateStatus = async (orderId, newStatus) => {
+    try {
+      const token = localStorage.getItem('quickbite_token');
+      const response = await fetch(`http://localhost:5005/api/orders/${orderId}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+      
+      if (response.ok) {
+        setOrders(prev => 
+          prev.map(order => 
+            order._id === orderId ? { ...order, orderStatus: newStatus } : order
+          )
+        );
+      }
+    } catch (err) {
+      console.error('Failed to update order status:', err);
+      // Fallback update local state for preview
+      setOrders(prev => 
+        prev.map(order => 
+          order._id === orderId ? { ...order, orderStatus: newStatus } : order
+        )
+      );
+    }
   };
 
   // Handle Delete Food
-  const handleDeleteFood = (id) => {
-    setFoods(prev => prev.filter(food => food._id !== id));
+  const handleDeleteFood = async (id) => {
+    try {
+      const token = localStorage.getItem('quickbite_token');
+      const response = await fetch(`http://localhost:5005/api/foods/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (response.ok) {
+        setFoods(prev => prev.filter(food => food._id !== id));
+      }
+    } catch (err) {
+      console.error('Failed to delete food item:', err);
+      setFoods(prev => prev.filter(food => food._id !== id));
+    }
   };
 
-  // Handle Add Food
-  const handleAddFood = (e) => {
+  const handleStartEdit = (food) => {
+    setEditingFoodId(food._id);
+    setNewItemName(food.name);
+    setNewItemPrice(food.price.toString());
+    setNewItemCategory(food.category);
+    setNewItemImage(food.image);
+    setNewItemDescription(food.description || '');
+  };
+
+  const resetForm = () => {
+    setEditingFoodId(null);
+    setNewItemName('');
+    setNewItemPrice('');
+    setNewItemCategory('Pizza');
+    setNewItemImage('');
+    setNewItemDescription('');
+  };
+
+  // Handle Add/Edit Food Form Submit
+  const handleSaveFood = async (e) => {
     e.preventDefault();
     if (!newItemName || !newItemPrice || !newItemImage) return;
 
-    const newFood = {
-      _id: Date.now().toString(),
+    const token = localStorage.getItem('quickbite_token');
+    const foodData = {
       name: newItemName,
       price: parseFloat(newItemPrice),
       category: newItemCategory,
-      image: newItemImage
+      image: newItemImage,
+      description: newItemDescription || 'Premium selection prepared with fresh, organic ingredients by our executive chefs.'
     };
 
-    setFoods(prev => [newFood, ...prev]);
-    setNewItemName('');
-    setNewItemPrice('');
-    setNewItemImage('');
+    if (editingFoodId) {
+      // Edit Mode
+      try {
+        const response = await fetch(`http://localhost:5005/api/foods/${editingFoodId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(foodData)
+        });
+
+        if (response.ok) {
+          const updatedFood = await response.json();
+          setFoods(prev => prev.map(f => f._id === editingFoodId ? updatedFood : f));
+          resetForm();
+        }
+      } catch (err) {
+        console.error('Failed to update food item:', err);
+        // Fallback local update
+        setFoods(prev => prev.map(f => f._id === editingFoodId ? { ...f, ...foodData } : f));
+        resetForm();
+      }
+    } else {
+      // Add Mode
+      try {
+        const response = await fetch('http://localhost:5005/api/foods', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(foodData)
+        });
+
+        if (response.ok) {
+          const addedFood = await response.json();
+          setFoods(prev => [addedFood, ...prev]);
+          resetForm();
+        }
+      } catch (err) {
+        console.error('Failed to create food item:', err);
+        // Fallback local update
+        const newFood = {
+          _id: Date.now().toString(),
+          ...foodData
+        };
+        setFoods(prev => [newFood, ...prev]);
+        resetForm();
+      }
+    }
   };
 
   // Calculate statistics
@@ -258,23 +406,27 @@ const AdminDashboard = () => {
                       </td>
                       <td style={{ padding: '16px 24px' }}>
                         <span className="badge" style={{ 
-                          background: order.orderStatus === 'Pending' ? 'rgba(255,107,53,0.1)' : order.orderStatus === 'Cooking' ? 'rgba(255,183,3,0.1)' : 'rgba(76,201,240,0.1)',
-                          color: order.orderStatus === 'Pending' ? 'var(--primary)' : order.orderStatus === 'Cooking' ? 'var(--star-color)' : '#4cc9f0'
+                          background: order.orderStatus === 'Pending' ? 'rgba(255,107,53,0.1)' : order.orderStatus === 'Cooking' ? 'rgba(255,183,3,0.1)' : order.orderStatus === 'Cancelled' ? 'rgba(247,37,133,0.1)' : 'rgba(76,201,240,0.1)',
+                          color: order.orderStatus === 'Pending' ? 'var(--primary)' : order.orderStatus === 'Cooking' ? 'var(--star-color)' : order.orderStatus === 'Cancelled' ? 'var(--warning)' : '#4cc9f0'
                         }}>
                           {order.orderStatus}
                         </span>
                       </td>
                       <td style={{ padding: '16px 24px' }}>
-                        <select 
-                          value={order.orderStatus}
-                          onChange={(e) => handleUpdateStatus(order._id, e.target.value)}
-                          style={{ background: 'var(--bg-main)', color: '#fff', border: '1px solid var(--border-glass)', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer' }}
-                        >
-                          <option value="Pending">Pending</option>
-                          <option value="Cooking">Cooking</option>
-                          <option value="Out for Delivery">Out for Delivery</option>
-                          <option value="Delivered">Delivered</option>
-                        </select>
+                        {order.orderStatus === 'Cancelled' ? (
+                          <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>No action available</span>
+                        ) : (
+                          <select 
+                            value={order.orderStatus}
+                            onChange={(e) => handleUpdateStatus(order._id, e.target.value)}
+                            style={{ background: 'var(--bg-main)', color: '#fff', border: '1px solid var(--border-glass)', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer' }}
+                          >
+                            <option value="Pending">Pending</option>
+                            <option value="Cooking">Cooking</option>
+                            <option value="Out for Delivery">Out for Delivery</option>
+                            <option value="Delivered">Delivered</option>
+                          </select>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -304,22 +456,33 @@ const AdminDashboard = () => {
                         <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{food.category}</div>
                       </div>
                       <div style={{ fontWeight: 700, color: 'var(--primary)' }}>${food.price.toFixed(2)}</div>
-                      <button 
-                        onClick={() => handleDeleteFood(food._id)}
-                        className="btn btn-glass" 
-                        style={{ padding: '8px', color: 'var(--warning)', borderColor: 'rgba(247,37,133,0.2)' }}
-                      >
-                        <Trash size={16} />
-                      </button>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button 
+                          onClick={() => handleStartEdit(food)}
+                          className="btn btn-glass" 
+                          style={{ padding: '8px', color: 'var(--success)', borderColor: 'rgba(76,201,240,0.2)' }}
+                          title="Edit Food Item"
+                        >
+                          <Edit size={16} />
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteFood(food._id)}
+                          className="btn btn-glass" 
+                          style={{ padding: '8px', color: 'var(--warning)', borderColor: 'rgba(247,37,133,0.2)' }}
+                          title="Delete Food Item"
+                        >
+                          <Trash size={16} />
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Add New Food Form */}
+              {/* Add / Edit Food Form */}
               <div className="glass-panel" style={{ padding: '24px' }}>
-                <h4 style={{ marginBottom: '20px' }}>Add Food Item</h4>
-                <form onSubmit={handleAddFood} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <h4 style={{ marginBottom: '20px' }}>{editingFoodId ? 'Edit Food Item' : 'Add Food Item'}</h4>
+                <form onSubmit={handleSaveFood} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Dish Name</label>
@@ -372,9 +535,31 @@ const AdminDashboard = () => {
                     />
                   </div>
 
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Description</label>
+                    <textarea 
+                      placeholder="Brief description of the dish..."
+                      value={newItemDescription}
+                      onChange={(e) => setNewItemDescription(e.target.value)}
+                      className="glass-input" 
+                      style={{ minHeight: '80px', resize: 'vertical' }}
+                    />
+                  </div>
+
                   <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '10px' }}>
-                    Add to Menu
+                    {editingFoodId ? 'Save Changes' : 'Add to Menu'}
                   </button>
+
+                  {editingFoodId && (
+                    <button 
+                      type="button" 
+                      onClick={resetForm} 
+                      className="btn btn-secondary" 
+                      style={{ width: '100%' }}
+                    >
+                      Cancel Edit
+                    </button>
+                  )}
 
                 </form>
               </div>

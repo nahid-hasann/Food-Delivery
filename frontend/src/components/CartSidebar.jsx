@@ -3,19 +3,22 @@ import { X, Trash2, Plus, Minus, CreditCard, ShoppingBag, ArrowRight } from 'luc
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../context/ToastContext';
 
 const CartSidebar = () => {
   const { cartItems, isCartOpen, toggleCart, updateQuantity, removeFromCart, cartTotal, clearCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { showToast } = useToast();
   
   // Checkout address details state
   const [address, setAddress] = useState('');
   const [phone, setPhone] = useState(user?.phone || '');
   const [showCheckoutForm, setShowCheckoutForm] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isDemoMode, setIsDemoMode] = useState(true);
 
-  if (!isCartOpen) return null;
+  if (!isCartOpen || user?.role === 'admin') return null;
 
   const handleCheckoutSubmit = async (e) => {
     e.preventDefault();
@@ -25,7 +28,7 @@ const CartSidebar = () => {
     
     // If user is not logged in, prompt to log in first
     if (!user) {
-      alert('Please login to place an order.');
+      showToast('Please login to place an order.', 'error');
       setIsProcessing(false);
       toggleCart();
       navigate('/login');
@@ -36,7 +39,7 @@ const CartSidebar = () => {
       const token = localStorage.getItem('quickbite_token');
       
       // Post order details to backend to get PayHere parameters
-      const response = await fetch('http://localhost:5000/api/orders/checkout', {
+      const response = await fetch('http://localhost:5005/api/orders/checkout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -51,55 +54,59 @@ const CartSidebar = () => {
           })),
           totalAmount: cartTotal,
           deliveryAddress: address,
-          phone: phone
+          phone: phone,
+          frontendUrl: window.location.origin
         })
       });
 
       const orderData = await response.json();
-      setIsProcessing(false);
 
       if (!response.ok) {
         throw new Error(orderData.message || 'Failed to place order');
       }
 
-      // If backend succeeds, it returns PayHere payment parameters
-      // We will programmatically submit a form redirecting to PayHere Sandbox!
-      const paymentParams = orderData.paymentParams;
-      
-      // Create a temporary HTML form and submit it
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = 'https://sandbox.payhere.lk/pay/checkout'; // PayHere Sandbox URL
-      
-      // Append all payment parameters as hidden inputs
-      Object.keys(paymentParams).forEach(key => {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = key;
-        input.value = paymentParams[key];
-        form.appendChild(input);
-      });
-      
-      document.body.appendChild(form);
-      form.submit();
-      
-      // Clear local cart
-      clearCart();
-      toggleCart();
+      if (isDemoMode) {
+        // Bypass redirect and simulate success directly for local offline testing
+        const simulateSuccessResponse = await fetch(`http://localhost:5005/api/orders/simulate-success/${orderData.orderId}`, {
+          method: 'POST'
+        });
+        
+        setIsProcessing(false);
+        clearCart();
+        toggleCart();
+        showToast('🎉 Mock Payment Successful! Your order has been placed and marked as Paid.', 'success');
+        navigate('/my-orders');
+      } else {
+        // Proceed to real PayHere Sandbox
+        const paymentParams = orderData.paymentParams;
+        
+        // Create a temporary HTML form and submit it
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = 'https://sandbox.payhere.lk/pay/checkout'; // PayHere Sandbox URL
+        
+        // Append all payment parameters as hidden inputs
+        Object.keys(paymentParams).forEach(key => {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = key;
+          input.value = paymentParams[key];
+          form.appendChild(input);
+        });
+        
+        document.body.appendChild(form);
+        form.submit();
+        
+        // Clear local cart
+        clearCart();
+        toggleCart();
+        setIsProcessing(false);
+      }
 
     } catch (error) {
       console.error('Checkout error:', error);
-      
-      // Fallback: If database/backend connection isn't set up yet, simulate success for visual review
-      alert('Simulating Redirect to PayHere Sandbox Payment Gateway...\nTotal: $' + cartTotal.toFixed(2));
+      showToast('Checkout failed: ' + error.message, 'error');
       setIsProcessing(false);
-      
-      // Clear cart and redirect to success
-      clearCart();
-      toggleCart();
-      
-      // Redirect to orders page or confirmation page
-      navigate('/my-orders');
     }
   };
 
@@ -243,6 +250,20 @@ const CartSidebar = () => {
                   <span style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary)' }}>${cartTotal.toFixed(2)}</span>
                 </div>
 
+                {/* Demo Mode Toggle */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '4px 0 12px', background: 'rgba(255, 107, 53, 0.08)', padding: '10px', borderRadius: '8px', border: '1px dashed rgba(255, 107, 53, 0.2)' }}>
+                  <input 
+                    type="checkbox" 
+                    id="demoMode" 
+                    checked={isDemoMode} 
+                    onChange={(e) => setIsDemoMode(e.target.checked)}
+                    style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: 'var(--primary)' }}
+                  />
+                  <label htmlFor="demoMode" style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 600, cursor: 'pointer', userSelect: 'none' }}>
+                    ⚡ Demo Mode (Simulate Instant Payment)
+                  </label>
+                </div>
+
                 <button 
                   type="submit" 
                   className="btn btn-primary" 
@@ -250,7 +271,7 @@ const CartSidebar = () => {
                   disabled={isProcessing}
                 >
                   <CreditCard size={18} />
-                  {isProcessing ? 'Redirecting...' : 'Proceed to PayHere Sandbox'}
+                  {isProcessing ? 'Processing...' : isDemoMode ? 'Place Order (Demo Pay)' : 'Proceed to PayHere Sandbox'}
                 </button>
               </form>
             )}

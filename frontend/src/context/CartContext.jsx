@@ -23,15 +23,15 @@ export const CartProvider = ({ children }) => {
     localStorage.setItem('quickbite_cart', JSON.stringify(cartItems));
   }, [cartItems]);
 
-  const addToCart = (item) => {
+  const addToCart = (item, quantityToAdd = 1) => {
     setCartItems((prevItems) => {
       const existingItem = prevItems.find((i) => i._id === item._id);
       if (existingItem) {
         return prevItems.map((i) =>
-          i._id === item._id ? { ...i, quantity: i.quantity + 1 } : i
+          i._id === item._id ? { ...i, quantity: i.quantity + quantityToAdd } : i
         );
       }
-      return [...prevItems, { ...item, quantity: 1 }];
+      return [...prevItems, { ...item, quantity: quantityToAdd }];
     });
   };
 
