@@ -541,7 +541,7 @@ const AdminDashboard = () => {
                       </td>
                       <td style={{ padding: '16px 24px', fontWeight: 600, color: 'var(--primary)' }}>${order.totalAmount.toFixed(2)}</td>
                       <td style={{ padding: '16px 24px' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'flex-start' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' }}>
                           <span className={`badge ${order.paymentStatus === 'Paid' ? 'badge-success' : 'badge-danger'}`}>
                             {order.paymentStatus}
                           </span>
