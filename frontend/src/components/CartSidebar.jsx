@@ -293,18 +293,29 @@ const CartSidebar = () => {
 
                 {/* Demo Mode Toggle (Only visible if Online Card is selected) */}
                 {paymentMethod === 'Card' && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '4px 0 12px', background: 'rgba(255, 107, 53, 0.08)', padding: '10px', borderRadius: '8px', border: '1px dashed rgba(255, 107, 53, 0.2)' }}>
-                    <input 
-                      type="checkbox" 
-                      id="demoMode" 
-                      checked={isDemoMode} 
-                      onChange={(e) => setIsDemoMode(e.target.checked)}
-                      style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: 'var(--primary)' }}
-                    />
-                    <label htmlFor="demoMode" style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 600, cursor: 'pointer', userSelect: 'none' }}>
-                      ⚡ Demo Mode (Simulate Instant Payment)
-                    </label>
-                  </div>
+                  <>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '4px 0 12px', background: 'rgba(255, 107, 53, 0.08)', padding: '10px', borderRadius: '8px', border: '1px dashed rgba(255, 107, 53, 0.2)' }}>
+                      <input 
+                        type="checkbox" 
+                        id="demoMode" 
+                        checked={isDemoMode} 
+                        onChange={(e) => setIsDemoMode(e.target.checked)}
+                        style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: 'var(--primary)' }}
+                      />
+                      <label htmlFor="demoMode" style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 600, cursor: 'pointer', userSelect: 'none' }}>
+                        ⚡ Demo Mode (Simulate Instant Payment)
+                      </label>
+                    </div>
+                    
+                    {!isDemoMode && (
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.05)', padding: '10px', borderRadius: '8px', marginBottom: '12px', border: '1px solid var(--border-glass)' }}>
+                        <strong>Sandbox Test Cards:</strong><br/>
+                        Visa: <code style={{color: 'var(--primary)'}}>4916217501611292</code><br/>
+                        MasterCard: <code style={{color: 'var(--primary)'}}>5307732125531191</code><br/>
+                        <span style={{fontSize: '0.7rem', opacity: 0.8}}>(Use any future expiry date & CVV)</span>
+                      </div>
+                    )}
+                  </>
                 )}
 
                 <button 
