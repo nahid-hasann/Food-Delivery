@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import Swal from 'sweetalert2';
 import { LayoutDashboard, ShoppingBag, Plus, Trash, Edit, RefreshCw, DollarSign, Users, Award, ShieldAlert } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 
 // Mock data for Admin Panel Preview (Fallback)
 const MOCK_ORDERS = [
@@ -45,6 +47,7 @@ const MOCK_FOODS = [
 
 const AdminDashboard = () => {
   const { user } = useAuth();
+  const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState('Overview');
   
   // State variables (populated with mock values initially)
@@ -135,22 +138,48 @@ const AdminDashboard = () => {
   };
 
   // Handle Delete Food
-  const handleDeleteFood = async (id) => {
-    try {
-      const token = localStorage.getItem('quickbite_token');
-      const response = await fetch(`http://localhost:5005/api/foods/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      if (response.ok) {
-        setFoods(prev => prev.filter(food => food._id !== id));
+  const handleDeleteFood = (id, foodName) => {
+    Swal.fire({
+      title: 'Delete Menu Item?',
+      html: `Are you sure you want to delete <strong style="color: var(--primary);">${foodName}</strong>?<br/>This action cannot be undone.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, Delete',
+      cancelButtonText: 'No, Cancel',
+      confirmButtonColor: 'var(--primary)',
+      cancelButtonColor: 'rgba(255,255,255,0.08)',
+      background: 'rgba(20, 22, 30, 0.95)',
+      color: '#fff',
+      backdrop: `rgba(0,0,0,0.6)`,
+      customClass: {
+        popup: 'glass-panel'
       }
-    } catch (err) {
-      console.error('Failed to delete food item:', err);
-      setFoods(prev => prev.filter(food => food._id !== id));
-    }
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const token = localStorage.getItem('quickbite_token');
+          const response = await fetch(`http://localhost:5005/api/foods/${id}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          if (response.ok) {
+            setFoods(prev => prev.filter(food => food._id !== id));
+            showToast(`🗑️ ${foodName} has been deleted.`, 'success');
+          } else {
+            // Fallback preview
+            setFoods(prev => prev.filter(food => food._id !== id));
+            showToast(`🗑️ ${foodName} has been deleted (Demo mode).`, 'success');
+          }
+        } catch (err) {
+          console.error('Failed to delete food item:', err);
+          // Fallback preview
+          setFoods(prev => prev.filter(food => food._id !== id));
+          showToast(`🗑️ ${foodName} has been deleted (Demo mode).`, 'success');
+        }
+      }
+    });
   };
 
   // Handle Toggle Availability (Out of Stock / Available)
@@ -224,12 +253,19 @@ const AdminDashboard = () => {
         if (response.ok) {
           const updatedFood = await response.json();
           setFoods(prev => prev.map(f => f._id === editingFoodId ? updatedFood : f));
+          showToast(`🎉 "${foodData.name}" updated successfully!`, 'success');
+          resetForm();
+        } else {
+          // Fallback preview
+          setFoods(prev => prev.map(f => f._id === editingFoodId ? { ...f, ...foodData } : f));
+          showToast(`🎉 "${foodData.name}" updated successfully! (Demo mode)`, 'success');
           resetForm();
         }
       } catch (err) {
         console.error('Failed to update food item:', err);
         // Fallback local update
         setFoods(prev => prev.map(f => f._id === editingFoodId ? { ...f, ...foodData } : f));
+        showToast(`🎉 "${foodData.name}" updated successfully! (Demo mode)`, 'success');
         resetForm();
       }
     } else {
@@ -247,6 +283,16 @@ const AdminDashboard = () => {
         if (response.ok) {
           const addedFood = await response.json();
           setFoods(prev => [addedFood, ...prev]);
+          showToast(`🎉 "${foodData.name}" added to menu!`, 'success');
+          resetForm();
+        } else {
+          // Fallback preview
+          const newFood = {
+            _id: Date.now().toString(),
+            ...foodData
+          };
+          setFoods(prev => [newFood, ...prev]);
+          showToast(`🎉 "${foodData.name}" added to menu! (Demo mode)`, 'success');
           resetForm();
         }
       } catch (err) {
@@ -257,6 +303,7 @@ const AdminDashboard = () => {
           ...foodData
         };
         setFoods(prev => [newFood, ...prev]);
+        showToast(`🎉 "${foodData.name}" added to menu! (Demo mode)`, 'success');
         resetForm();
       }
     }
@@ -623,7 +670,7 @@ const AdminDashboard = () => {
                           <Edit size={16} />
                         </motion.button>
                         <motion.button 
-                          onClick={() => handleDeleteFood(food._id)}
+                          onClick={() => handleDeleteFood(food._id, food.name)}
                           className="btn btn-glass" 
                           style={{ padding: '8px', color: 'var(--warning)', borderColor: 'rgba(247,37,133,0.2)' }}
                           title="Delete Food Item"
