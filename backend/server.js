@@ -26,6 +26,9 @@ const startServer = async () => {
   
   const app = express();
 
+  // Trust proxy for secure headers (Render, Heroku, etc.)
+  app.set('trust proxy', 1);
+
   // Middlewares
   app.use(cors());
   app.use(express.json());

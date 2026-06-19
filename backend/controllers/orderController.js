@@ -75,13 +75,17 @@ export const checkout = async (req, res) => {
     // Build dynamic client urls (fall back to port 5173 if not passed)
     const clientUrl = frontendUrl || 'http://localhost:5173';
 
+    // Build dynamic webhook url (fall back to localhost:5005 if BACKEND_URL not set and request host is missing)
+    const backendUrl = process.env.BACKEND_URL || `${req.protocol}://${req.get('host')}`;
+    const notifyUrl = `${backendUrl}/api/orders/notify`;
+
     // Assemble payment parameters to send back to frontend
     const paymentParams = {
       sandbox: true,
       merchant_id: merchantId,
       return_url: `${clientUrl}/my-orders?payment=success&orderId=${order._id.toString()}`,
       cancel_url: `${clientUrl}/`,
-      notify_url: 'http://localhost:5005/api/orders/notify', // Actual webhook endpoint
+      notify_url: notifyUrl, // Dynamic webhook endpoint
       order_id: order._id.toString(),
       items: items.map(item => item.name).join(', '),
       amount: totalAmount.toFixed(2),
