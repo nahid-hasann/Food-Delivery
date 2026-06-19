@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Star, ShoppingCart, ChevronLeft, ChevronRight, Heart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useWishlist } from '../context/WishlistContext';
@@ -87,9 +88,37 @@ const Menu = () => {
     }
   };
 
+  const pageVariants = {
+    initial: { opacity: 0, y: 15 },
+    animate: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] } },
+    exit: { opacity: 0, y: -15, transition: { duration: 0.3 } }
+  };
+
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05
+      }
+    }
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } }
+  };
+
   return (
-    <div className="container animate-fade-in" style={{ paddingTop: '40px', paddingBottom: '80px' }}>
-      <div className="animate-slide-up" style={{ textAlign: 'center', marginBottom: '48px' }}>
+    <motion.div 
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      className="container" 
+      style={{ paddingTop: '40px', paddingBottom: '80px' }}
+    >
+      <div style={{ textAlign: 'center', marginBottom: '48px' }}>
         <h2 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '8px' }}>
           Explore Our <span className="text-gradient">Delectable Menu</span>
         </h2>
@@ -99,7 +128,7 @@ const Menu = () => {
       </div>
 
       {/* Search Bar */}
-      <div className="glass-panel animate-slide-up animation-delay-1" style={{ display: 'flex', alignItems: 'center', padding: '6px 12px', maxWidth: '600px', margin: '0 auto 40px', gap: '12px' }}>
+      <div className="glass-panel" style={{ display: 'flex', alignItems: 'center', padding: '6px 12px', maxWidth: '600px', margin: '0 auto 40px', gap: '12px' }}>
         <Search color="var(--text-muted)" size={20} />
         <input 
           type="text" 
@@ -111,18 +140,26 @@ const Menu = () => {
       </div>
 
       {/* Category Buttons */}
-      <div className="animate-slide-up animation-delay-2" style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap', marginBottom: '48px' }}>
+      <motion.div 
+        variants={staggerContainer}
+        initial="hidden"
+        animate="show"
+        style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap', marginBottom: '48px' }}
+      >
         {categories.map(category => (
-          <button
+          <motion.button
             key={category}
             onClick={() => setSelectedCategory(category)}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            variants={cardVariants}
             className={`btn ${selectedCategory === category ? 'btn-primary' : 'btn-glass'}`}
             style={{ padding: '8px 24px', borderRadius: '30px' }}
           >
             {category}
-          </button>
+          </motion.button>
         ))}
-      </div>
+      </motion.div>
 
       {/* Menu Grid */}
       {loading ? (
@@ -144,9 +181,21 @@ const Menu = () => {
         </div>
       ) : (
         <>
-          <div className="grid-responsive">
-            {currentFoods.map((food, index) => (
-              <div key={food._id} className={`glass-card reveal delay-${(index % 3) + 1}`} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+          <motion.div 
+            variants={staggerContainer}
+            initial="hidden"
+            animate="show"
+            className="grid-responsive"
+          >
+            {currentFoods.map((food) => (
+              <motion.div 
+                key={food._id} 
+                variants={cardVariants}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="glass-card" 
+                style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
+              >
                 <div 
                   onClick={() => navigate(`/food/${food._id}`)}
                   style={{ width: '100%', height: '200px', overflow: 'hidden', position: 'relative', cursor: 'pointer' }}
@@ -161,7 +210,7 @@ const Menu = () => {
 
                   {/* Heart/Wishlist Button Overlay */}
                   {user?.role !== 'admin' && (
-                    <button
+                    <motion.button
                       onClick={(e) => {
                         e.stopPropagation();
                         if (!user) {
@@ -172,6 +221,8 @@ const Menu = () => {
                         toggleWishlist(food);
                         showToast(isFav ? `${food.name} removed from favorites.` : `${food.name} added to favorites.`, 'success');
                       }}
+                      whileHover={{ scale: 1.15 }}
+                      whileTap={{ scale: 0.85 }}
                       style={{
                         position: 'absolute',
                         top: '12px',
@@ -185,17 +236,8 @@ const Menu = () => {
                         alignItems: 'center',
                         justifyContent: 'center',
                         cursor: 'pointer',
-                        transition: 'all 0.2s ease',
                         zIndex: 10,
                         boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
-                      }}
-                      onMouseOver={(e) => {
-                        e.currentTarget.style.transform = 'scale(1.15)';
-                        e.currentTarget.style.background = 'rgba(20, 22, 30, 0.95)';
-                      }}
-                      onMouseOut={(e) => {
-                        e.currentTarget.style.transform = 'scale(1)';
-                        e.currentTarget.style.background = 'rgba(20, 22, 30, 0.85)';
                       }}
                     >
                       <Heart 
@@ -204,7 +246,7 @@ const Menu = () => {
                         fill={isInWishlist(food._id) ? 'var(--primary)' : 'none'} 
                         style={{ transition: 'fill 0.2s ease, color 0.2s ease' }}
                       />
-                    </button>
+                    </motion.button>
                   )}
 
                   {/* Out of Stock Overlay */}
@@ -263,14 +305,16 @@ const Menu = () => {
                     </span>
                     {user?.role !== 'admin' ? (
                       food.isAvailable !== false ? (
-                        <button 
+                        <motion.button 
                           onClick={() => addToCart(food)} 
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
                           className="btn btn-primary"
                           style={{ padding: '8px 16px', borderRadius: '8px', gap: '6px' }}
                         >
                           <ShoppingCart size={16} />
                           Add to Cart
-                        </button>
+                        </motion.button>
                       ) : (
                         <button 
                           className="btn btn-secondary"
@@ -287,26 +331,30 @@ const Menu = () => {
                     )}
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
 
           {/* Pagination Controls */}
           {totalPages > 1 && (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginTop: '48px' }}>
-              <button 
+              <motion.button 
                 onClick={() => handlePageChange(currentPage - 1)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 className="btn btn-glass"
                 style={{ padding: '8px 12px', borderRadius: '8px', display: 'flex', alignItems: 'center' }}
                 disabled={currentPage === 1}
               >
                 <ChevronLeft size={16} />
-              </button>
+              </motion.button>
               
               {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                <button
+                <motion.button
                   key={page}
                   onClick={() => handlePageChange(page)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   className={`btn ${currentPage === page ? 'btn-primary' : 'btn-glass'}`}
                   style={{ 
                     width: '36px', 
@@ -318,17 +366,19 @@ const Menu = () => {
                   }}
                 >
                   {page}
-                </button>
+                </motion.button>
               ))}
 
-              <button 
+              <motion.button 
                 onClick={() => handlePageChange(currentPage + 1)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 className="btn btn-glass"
                 style={{ padding: '8px 12px', borderRadius: '8px', display: 'flex', alignItems: 'center' }}
                 disabled={currentPage === totalPages}
               >
                 <ChevronRight size={16} />
-              </button>
+              </motion.button>
             </div>
           )}
         </>
@@ -339,7 +389,7 @@ const Menu = () => {
           <p style={{ color: 'var(--text-secondary)' }}>No items found.</p>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 };
 

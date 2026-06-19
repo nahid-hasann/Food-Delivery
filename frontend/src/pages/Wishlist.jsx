@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { Heart, ShoppingCart, Trash2, Star, Sparkles } from 'lucide-react';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
@@ -35,8 +36,21 @@ const Wishlist = () => {
     );
   }
 
+  const pageVariants = {
+    initial: { opacity: 0, y: 15 },
+    animate: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] } },
+    exit: { opacity: 0, y: -15, transition: { duration: 0.3 } }
+  };
+
   return (
-    <div className="container animate-fade-in" style={{ paddingTop: '40px', paddingBottom: '80px' }}>
+    <motion.div 
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      className="container" 
+      style={{ paddingTop: '40px', paddingBottom: '80px' }}
+    >
       
       {/* Header */}
       <div className="animate-slide-up" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '40px' }}>
@@ -49,20 +63,21 @@ const Wishlist = () => {
         </div>
       </div>
 
+      {/* Grid */}
       {wishlistItems.length === 0 ? (
-        <div className="glass-panel reveal" style={{ textAlign: 'center', padding: '60px 24px', borderRadius: '16px' }}>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', marginBottom: '24px' }}>Your favorites list is empty.</p>
-          <button onClick={() => navigate('/menu')} className="btn btn-primary" style={{ gap: '8px' }}>
-            <Sparkles size={16} />
-            Explore Gourmet Menu
+        <div className="glass-panel" style={{ padding: '60px 24px', textAlign: 'center', borderRadius: '24px' }}>
+          <Heart size={40} color="var(--text-muted)" style={{ marginBottom: '16px' }} />
+          <h3 style={{ fontSize: '1.25rem', marginBottom: '8px', fontWeight: 600 }}>Your Favorites List is Empty</h3>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '24px' }}>Tap the heart on menu items to save them here.</p>
+          <button onClick={() => navigate('/menu')} className="btn btn-primary">
+            Explore Menu
           </button>
         </div>
       ) : (
         <div className="grid-responsive">
-          {wishlistItems.map((food, index) => (
-            <div key={food._id} className={`glass-card reveal delay-${(index % 3) + 1}`} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-              
-              {/* Card Image */}
+          {wishlistItems.map((food) => (
+            <div key={food._id} className="glass-card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+              {/* Image Container */}
               <div 
                 onClick={() => navigate(`/food/${food._id}`)}
                 style={{ width: '100%', height: '180px', overflow: 'hidden', position: 'relative', cursor: 'pointer' }}
@@ -70,16 +85,13 @@ const Wishlist = () => {
                 <img 
                   src={food.image} 
                   alt={food.name} 
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'var(--transition-slow)' }}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.3s' }}
                   onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.08)'}
                   onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
                 />
-                <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'rgba(20, 22, 30, 0.8)', padding: '4px 10px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <Star size={14} color="var(--star-color)" fill="var(--star-color)" />
-                  <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>{food.rating}</span>
-                </div>
-                <div style={{ position: 'absolute', bottom: '12px', left: '12px' }}>
-                  <span className="badge badge-primary">{food.category}</span>
+                <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'rgba(20, 22, 30, 0.8)', padding: '4px 8px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '4px', border: '1px solid var(--border-glass)' }}>
+                  <Star size={12} color="var(--star-color)" fill="var(--star-color)" />
+                  <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>{food.rating}</span>
                 </div>
               </div>
 
@@ -128,7 +140,7 @@ const Wishlist = () => {
         </div>
       )}
 
-    </div>
+    </motion.div>
   );
 };
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { ChevronLeft, Plus, Minus, ShoppingCart, Star, Sparkles, Heart } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -111,18 +112,33 @@ const ProductDetails = () => {
     );
   }
 
+  const pageVariants = {
+    initial: { opacity: 0, y: 15 },
+    animate: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] } },
+    exit: { opacity: 0, y: -15, transition: { duration: 0.3 } }
+  };
+
   return (
-    <div className="container animate-fade-in" style={{ paddingTop: '40px', paddingBottom: '80px' }}>
+    <motion.div 
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      className="container" 
+      style={{ paddingTop: '40px', paddingBottom: '80px' }}
+    >
       
       {/* Back Link */}
-      <button 
+      <motion.button 
         onClick={() => navigate(-1)} 
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
         className="btn btn-glass"
         style={{ marginBottom: '32px', padding: '8px 16px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}
       >
         <ChevronLeft size={16} />
         Back
-      </button>
+      </motion.button>
 
       {/* Details Grid Container */}
       <div style={{ 
@@ -132,7 +148,13 @@ const ProductDetails = () => {
         alignItems: 'start'
       }}>
         {/* Left Column: Image Card */}
-        <div className="glass-card" style={{ padding: '0', overflow: 'hidden', borderRadius: '24px', boxShadow: 'var(--shadow-lg)', border: '1px solid var(--border-glass)' }}>
+        <motion.div 
+          initial={{ opacity: 0, x: -30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+          className="glass-card" 
+          style={{ padding: '0', overflow: 'hidden', borderRadius: '24px', boxShadow: 'var(--shadow-lg)', border: '1px solid var(--border-glass)' }}
+        >
           <div style={{ width: '100%', height: '400px', overflow: 'hidden', position: 'relative' }}>
             <img 
               src={food.image} 
@@ -177,10 +199,16 @@ const ProductDetails = () => {
               <span className="badge badge-primary" style={{ padding: '6px 14px', fontSize: '0.8rem' }}>{food.category}</span>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Right Column: Info Panel */}
-        <div className="glass-panel" style={{ padding: '40px', display: 'flex', flexDirection: 'column', gap: '24px', borderRadius: '24px', border: '1px solid var(--border-glass)', boxShadow: 'var(--shadow-md)' }}>
+        <motion.div 
+          initial={{ opacity: 0, x: 30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+          className="glass-panel" 
+          style={{ padding: '40px', display: 'flex', flexDirection: 'column', gap: '24px', borderRadius: '24px', border: '1px solid var(--border-glass)', boxShadow: 'var(--shadow-md)' }}
+        >
           
           <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -200,7 +228,7 @@ const ProductDetails = () => {
             </div>
             
             {user?.role !== 'admin' && (
-              <button
+              <motion.button
                 onClick={() => {
                   if (!user) {
                     showToast('Please login to add favorites.', 'error');
@@ -210,6 +238,8 @@ const ProductDetails = () => {
                   toggleWishlist(food);
                   showToast(isFav ? `${food.name} removed from favorites.` : `${food.name} added to favorites.`, 'success');
                 }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
                 className="btn btn-glass"
                 style={{
                   padding: '10px',
@@ -222,16 +252,7 @@ const ProductDetails = () => {
                   background: 'rgba(20, 22, 30, 0.6)',
                   border: '1px solid var(--border-glass)',
                   boxShadow: 'var(--shadow-sm)',
-                  transition: 'all 0.2s ease',
                   cursor: 'pointer'
-                }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.transform = 'scale(1.1)';
-                  e.currentTarget.style.background = 'rgba(20, 22, 30, 0.85)';
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.transform = 'scale(1)';
-                  e.currentTarget.style.background = 'rgba(20, 22, 30, 0.6)';
                 }}
               >
                 <Heart 
@@ -240,7 +261,7 @@ const ProductDetails = () => {
                   fill={isInWishlist(food._id) ? 'var(--primary)' : 'none'}
                   style={{ transition: 'fill 0.2s ease, color 0.2s ease' }}
                 />
-              </button>
+              </motion.button>
             )}
           </div>
           </div>
@@ -255,35 +276,39 @@ const ProductDetails = () => {
               <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
                 {/* Quantity Control */}
                 <div className="glass-panel" style={{ display: 'inline-flex', alignItems: 'center', padding: '6px 14px', borderRadius: '12px', border: '1px solid var(--border-glass)', gap: '16px', opacity: food.isAvailable !== false ? 1 : 0.5 }}>
-                  <button 
+                  <motion.button 
                     onClick={handleDecrement}
                     disabled={food.isAvailable === false}
+                    whileTap={{ scale: 0.85 }}
                     className="btn-circle btn-glass"
                     style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, cursor: food.isAvailable !== false ? 'pointer' : 'not-allowed' }}
                   >
                     <Minus size={14} />
-                  </button>
+                  </motion.button>
                   <span style={{ fontSize: '1.1rem', fontWeight: 700, minWidth: '20px', textAlign: 'center' }}>{food.isAvailable !== false ? quantity : 0}</span>
-                  <button 
+                  <motion.button 
                     onClick={handleIncrement}
                     disabled={food.isAvailable === false}
+                    whileTap={{ scale: 0.85 }}
                     className="btn-circle btn-glass"
                     style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, cursor: food.isAvailable !== false ? 'pointer' : 'not-allowed' }}
                   >
                     <Plus size={14} />
-                  </button>
+                  </motion.button>
                 </div>
 
                 {/* Add to Cart Button */}
                 {food.isAvailable !== false ? (
-                  <button 
+                  <motion.button 
                     onClick={handleAddToCartClick}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
                     className="btn btn-primary" 
                     style={{ padding: '14px 28px', borderRadius: '12px', flexGrow: 1, gap: '8px', minWidth: '180px' }}
                   >
                     <ShoppingCart size={18} />
                     Add to Cart (${(food.price * quantity).toFixed(2)})
-                  </button>
+                  </motion.button>
                 ) : (
                   <button 
                     disabled
@@ -301,10 +326,10 @@ const ProductDetails = () => {
             )}
           </div>
 
-        </div>
+        </motion.div>
       </div>
 
-    </div>
+    </motion.div>
   );
 };
 

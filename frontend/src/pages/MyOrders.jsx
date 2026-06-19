@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { ShoppingBag, Clock, CheckCircle, Truck, Utensils, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -174,9 +175,22 @@ const MyOrders = () => {
     );
   }
 
+  const pageVariants = {
+    initial: { opacity: 0, y: 15 },
+    animate: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] } },
+    exit: { opacity: 0, y: -15, transition: { duration: 0.3 } }
+  };
+
   return (
     <>
-      <div className="container animate-fade-in" style={{ paddingTop: '40px', paddingBottom: '80px', maxWidth: '800px' }}>
+      <motion.div 
+        variants={pageVariants}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+        className="container" 
+        style={{ paddingTop: '40px', paddingBottom: '80px', maxWidth: '800px' }}
+      >
       <div className="animate-slide-up" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '40px' }}>
         <div style={{ background: 'var(--primary-light)', padding: '12px', borderRadius: '16px' }}>
           <ShoppingBag size={24} color="var(--primary)" />
@@ -387,7 +401,7 @@ const MyOrders = () => {
           })}
         </div>
       )}
-    </div>
+    </motion.div>
 
     {/* Cancel Confirmation Modal */}
     {cancelOrderId && (

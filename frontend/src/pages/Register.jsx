@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { Mail, Lock, User, Phone, UserPlus } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -35,9 +36,22 @@ const Register = () => {
     }
   };
 
+  const pageVariants = {
+    initial: { opacity: 0, y: 15 },
+    animate: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] } },
+    exit: { opacity: 0, y: -15, transition: { duration: 0.3 } }
+  };
+
   return (
-    <div className="container flex-center animate-fade-in" style={{ minHeight: 'calc(100vh - 160px)', paddingTop: '40px', paddingBottom: '40px' }}>
-      <div className="glass-panel reveal" style={{ width: '100%', maxWidth: '450px', padding: '40px', boxShadow: 'var(--shadow-lg)' }}>
+    <motion.div 
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      className="container flex-center" 
+      style={{ minHeight: 'calc(100vh - 160px)', paddingTop: '40px', paddingBottom: '40px' }}
+    >
+      <div className="glass-panel" style={{ width: '100%', maxWidth: '450px', padding: '40px', boxShadow: 'var(--shadow-lg)' }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <h2 style={{ fontSize: '2rem', marginBottom: '8px' }}>Create <span className="text-gradient">Account</span></h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Join QuickBite for express food delivery</p>
@@ -118,11 +132,13 @@ const Register = () => {
             </div>
           </div>
 
-          <button 
+          <motion.button 
             type="submit" 
             className="btn btn-primary" 
             style={{ width: '100%', marginTop: '10px', padding: '14px' }}
             disabled={loading}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
           >
             {loading ? 'Creating Account...' : (
               <>
@@ -130,7 +146,7 @@ const Register = () => {
                 <UserPlus size={18} />
               </>
             )}
-          </button>
+          </motion.button>
         </form>
 
         <div style={{ textAlign: 'center', marginTop: '24px', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
@@ -140,7 +156,7 @@ const Register = () => {
           </Link>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

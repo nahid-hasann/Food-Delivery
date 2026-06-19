@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { User, Phone, MapPin, Lock, Eye, EyeOff, Save, Mail, Shield } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -76,8 +77,18 @@ const Profile = () => {
 
   if (!user) return null;
 
+  const pageVariants = {
+    initial: { opacity: 0, y: 15 },
+    animate: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] } },
+    exit: { opacity: 0, y: -15, transition: { duration: 0.3 } }
+  };
+
   return (
-    <div
+    <motion.div
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
       style={{
         minHeight: '100vh',
         paddingTop: '100px',
@@ -85,7 +96,7 @@ const Profile = () => {
         background: 'radial-gradient(ellipse at top left, rgba(255, 107, 53, 0.08) 0%, transparent 50%), radial-gradient(ellipse at bottom right, rgba(78, 205, 196, 0.06) 0%, transparent 50%)',
       }}
     >
-      <div className="container animate-fade-in" style={{ maxWidth: '700px', margin: '0 auto' }}>
+      <div className="container" style={{ maxWidth: '700px', margin: '0 auto' }}>
         {/* Page Header */}
         <div className="animate-slide-up" style={{ textAlign: 'center', marginBottom: '40px' }}>
           <div
@@ -336,7 +347,7 @@ const Profile = () => {
           </form>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

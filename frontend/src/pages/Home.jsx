@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { Search, Star, ShoppingCart, Sparkles, ArrowRight, Truck, Utensils, ShieldCheck, Mail, Heart } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -134,8 +135,35 @@ const Home = () => {
     }
   };
 
+  const pageVariants = {
+    initial: { opacity: 0, y: 15 },
+    animate: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] } },
+    exit: { opacity: 0, y: -15, transition: { duration: 0.3 } }
+  };
+
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } }
+  };
+
   return (
-    <div className="animate-fade-in" style={{ paddingBottom: '60px' }}>
+    <motion.div 
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      style={{ paddingBottom: '60px' }}
+    >
       
       {/* Hero Section */}
       <section style={{ 
@@ -149,19 +177,19 @@ const Home = () => {
         boxShadow: 'var(--shadow-lg)'
       }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <div className="animate-slide-up" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--primary-light)', padding: '6px 16px', borderRadius: '30px', color: 'var(--primary)', marginBottom: '24px', fontWeight: 600, fontSize: '0.9rem', border: '1px solid rgba(255, 107, 53, 0.2)' }}>
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="animate-slide-up" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--primary-light)', padding: '6px 16px', borderRadius: '30px', color: 'var(--primary)', marginBottom: '24px', fontWeight: 600, fontSize: '0.9rem', border: '1px solid rgba(255, 107, 53, 0.2)' }}>
             <Sparkles size={16} />
             The Ultimate Food Experience
-          </div>
-          <h1 className="animate-slide-up animation-delay-1" style={{ fontSize: '3.5rem', fontWeight: 800, marginBottom: '20px', lineHeight: 1.1 }}>
+          </motion.div>
+          <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }} className="animate-slide-up animation-delay-1" style={{ fontSize: '3.5rem', fontWeight: 800, marginBottom: '20px', lineHeight: 1.1 }}>
             Satisfy Your Cravings – <span className="text-gradient">Delivered in Minutes!</span>
-          </h1>
-          <p className="animate-slide-up animation-delay-2" style={{ color: 'var(--text-secondary)', fontSize: '1.2rem', marginBottom: '40px', lineHeight: 1.6 }}>
+          </motion.h1>
+          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }} className="animate-slide-up animation-delay-2" style={{ color: 'var(--text-secondary)', fontSize: '1.2rem', marginBottom: '40px', lineHeight: 1.6 }}>
             Choose from a wide variety of delicious meals made with fresh ingredients. Quick delivery right to your doorstep.
-          </p>
+          </motion.p>
 
           {/* Search bar */}
-          <div className="glass-panel animate-slide-up animation-delay-3" style={{ display: 'flex', alignItems: 'center', padding: '6px 12px', maxWidth: '600px', margin: '0 auto', gap: '12px' }}>
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6, delay: 0.3 }} className="glass-panel animate-slide-up animation-delay-3" style={{ display: 'flex', alignItems: 'center', padding: '6px 12px', maxWidth: '600px', margin: '0 auto', gap: '12px' }}>
             <Search color="var(--text-muted)" size={20} />
             <input 
               type="text" 
@@ -170,29 +198,38 @@ const Home = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{ flexGrow: 1, background: 'none', border: 'none', color: 'var(--text-primary)', fontSize: '1rem', padding: '10px 0' }}
             />
-            <button onClick={() => navigate('/menu')} className="btn btn-primary" style={{ padding: '10px 24px' }}>Explore Menu</button>
-          </div>
+            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => navigate('/menu')} className="btn btn-primary" style={{ padding: '10px 24px' }}>Explore Menu</motion.button>
+          </motion.div>
         </div>
       </section>
 
       {/* Main Catalog Section */}
-      <section className="container" style={{ marginBottom: '80px' }}>
-        <div className="reveal" style={{ textAlign: 'center', marginBottom: '40px' }}>
+      <motion.section 
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.15 }}
+        transition={{ duration: 0.6, ease: 'easeInOut' }}
+        className="container" 
+        style={{ marginBottom: '80px' }}
+      >
+        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
           <h2 style={{ fontSize: '2.2rem', marginBottom: '8px' }}>Featured <span className="text-gradient">Dishes</span></h2>
           <p style={{ color: 'var(--text-secondary)' }}>Check out our top culinary recommendations for today</p>
         </div>
 
         {/* Category Filters */}
-        <div className="reveal delay-1" style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap', marginBottom: '40px' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap', marginBottom: '40px' }}>
           {categories.map(category => (
-            <button
+            <motion.button
               key={category}
               onClick={() => setSelectedCategory(category)}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               className={`btn ${selectedCategory === category ? 'btn-primary' : 'btn-glass'}`}
               style={{ padding: '8px 24px', borderRadius: '30px', fontWeight: 600 }}
             >
               {category}
-            </button>
+            </motion.button>
           ))}
         </div>
 
@@ -216,9 +253,22 @@ const Home = () => {
           </div>
         ) : (
           <>
-            <div className="grid-responsive">
-              {homeDisplayFoods.map((food, index) => (
-                <div key={food._id} className={`glass-card reveal delay-${(index % 3) + 1}`} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+            <motion.div 
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.1 }}
+              className="grid-responsive"
+            >
+              {homeDisplayFoods.map((food) => (
+                <motion.div 
+                  key={food._id} 
+                  variants={cardVariants}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="glass-card" 
+                  style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
+                >
                   {/* Image Container */}
                   <div 
                     onClick={() => navigate(`/food/${food._id}`)} 
@@ -234,7 +284,7 @@ const Home = () => {
                     
                     {/* Heart/Wishlist Button Overlay */}
                     {user?.role !== 'admin' && (
-                      <button
+                      <motion.button
                         onClick={(e) => {
                           e.stopPropagation();
                           if (!user) {
@@ -245,6 +295,8 @@ const Home = () => {
                           toggleWishlist(food);
                           showToast(isFav ? `${food.name} removed from favorites.` : `${food.name} added to favorites.`, 'success');
                         }}
+                        whileHover={{ scale: 1.15 }}
+                        whileTap={{ scale: 0.85 }}
                         style={{
                           position: 'absolute',
                           top: '12px',
@@ -258,17 +310,8 @@ const Home = () => {
                           alignItems: 'center',
                           justifyContent: 'center',
                           cursor: 'pointer',
-                          transition: 'all 0.2s ease',
                           zIndex: 10,
                           boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
-                        }}
-                        onMouseOver={(e) => {
-                          e.currentTarget.style.transform = 'scale(1.15)';
-                          e.currentTarget.style.background = 'rgba(20, 22, 30, 0.95)';
-                        }}
-                        onMouseOut={(e) => {
-                          e.currentTarget.style.transform = 'scale(1)';
-                          e.currentTarget.style.background = 'rgba(20, 22, 30, 0.85)';
                         }}
                       >
                         <Heart 
@@ -277,7 +320,7 @@ const Home = () => {
                           fill={isInWishlist(food._id) ? 'var(--primary)' : 'none'} 
                           style={{ transition: 'fill 0.2s ease, color 0.2s ease' }}
                         />
-                      </button>
+                      </motion.button>
                     )}
 
                     {/* Out of Stock Overlay */}
@@ -340,14 +383,16 @@ const Home = () => {
                       </span>
                       {user?.role !== 'admin' ? (
                         food.isAvailable !== false ? (
-                          <button 
+                          <motion.button 
                             onClick={() => addToCart(food)} 
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
                             className="btn btn-primary"
                             style={{ padding: '8px 16px', borderRadius: '8px', gap: '6px', fontSize: '0.85rem' }}
                           >
                             <ShoppingCart size={16} />
                             Add to Cart
-                          </button>
+                          </motion.button>
                         ) : (
                           <button 
                             className="btn btn-secondary"
@@ -364,20 +409,22 @@ const Home = () => {
                       )}
                     </div>
                   </div>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
 
             {/* Explore Full Menu Button */}
             <div style={{ display: 'flex', justifyContent: 'center', marginTop: '48px' }}>
-              <button 
+              <motion.button 
                 onClick={() => navigate('/menu')} 
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 className="btn btn-primary" 
                 style={{ padding: '14px 36px', gap: '10px', fontSize: '1.05rem', boxShadow: 'var(--shadow-glow)' }}
               >
                 Explore Full Menu
                 <ArrowRight size={18} />
-              </button>
+              </motion.button>
             </div>
           </>
         )}
@@ -388,20 +435,39 @@ const Home = () => {
             <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}>No food items found matching your filters.</p>
           </div>
         )}
-      </section>
+      </motion.section>
 
       {/* How it Works Section */}
-      <section id="how-it-works" style={{ padding: '80px 0', marginBottom: '80px' }}>
+      <motion.section 
+        id="how-it-works" 
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.15 }}
+        transition={{ duration: 0.6, ease: 'easeInOut' }}
+        style={{ padding: '80px 0', marginBottom: '80px' }}
+      >
         <div className="container">
-          <div className="reveal" style={{ textAlign: 'center', marginBottom: '56px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '56px' }}>
             <span style={{ color: 'var(--primary)', fontWeight: 600, fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.15em', display: 'block', marginBottom: '12px' }}>Simple 3-Step Process</span>
             <h2 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '8px' }}>How <span className="text-gradient">QuickBite</span> Works</h2>
             <p style={{ color: 'var(--text-secondary)', maxWidth: '600px', margin: '0 auto' }}>From browsing our menu to taking your first delicious bite, we make the culinary journey effortless.</p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '40px', position: 'relative' }}>
+          <motion.div 
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.15 }}
+            style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '40px', position: 'relative' }}
+          >
             {/* Step 1 */}
-            <div className="glass-card reveal-left delay-1" style={{ padding: '40px 30px', textAlign: 'center', background: 'rgba(20, 22, 30, 0.65)', position: 'relative', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+            <motion.div 
+              variants={cardVariants}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="glass-card" 
+              style={{ padding: '40px 30px', textAlign: 'center', background: 'rgba(20, 22, 30, 0.65)', position: 'relative', border: '1px solid rgba(255, 255, 255, 0.08)', overflow: 'visible' }}
+            >
               <div style={{ position: 'absolute', top: '-20px', left: '50%', transform: 'translateX(-50%)', background: 'var(--primary-gradient)', color: '#fff', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '1.2rem', boxShadow: '0 4px 15px rgba(255, 107, 53, 0.4)' }}>
                 1
               </div>
@@ -412,10 +478,16 @@ const Home = () => {
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: '1.6' }}>
                 Explore our curated gallery of chef-crafted pizzas, burgers, desserts, and cold mocktails. Use filters to find exactly what you crave.
               </p>
-            </div>
+            </motion.div>
 
             {/* Step 2 */}
-            <div className="glass-card reveal delay-2" style={{ padding: '40px 30px', textAlign: 'center', background: 'rgba(20, 22, 30, 0.65)', position: 'relative', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+            <motion.div 
+              variants={cardVariants}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="glass-card" 
+              style={{ padding: '40px 30px', textAlign: 'center', background: 'rgba(20, 22, 30, 0.65)', position: 'relative', border: '1px solid rgba(255, 255, 255, 0.08)', overflow: 'visible' }}
+            >
               <div style={{ position: 'absolute', top: '-20px', left: '50%', transform: 'translateX(-50%)', background: 'var(--primary-gradient)', color: '#fff', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '1.2rem', boxShadow: '0 4px 15px rgba(255, 107, 53, 0.4)' }}>
                 2
               </div>
@@ -426,10 +498,16 @@ const Home = () => {
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: '1.6' }}>
                 Add items to your sliding cart, proceed to checkout, and complete your purchase seamlessly through sandbox integrated payment processing.
               </p>
-            </div>
+            </motion.div>
 
             {/* Step 3 */}
-            <div className="glass-card reveal-right delay-3" style={{ padding: '40px 30px', textAlign: 'center', background: 'rgba(20, 22, 30, 0.65)', position: 'relative', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+            <motion.div 
+              variants={cardVariants}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="glass-card" 
+              style={{ padding: '40px 30px', textAlign: 'center', background: 'rgba(20, 22, 30, 0.65)', position: 'relative', border: '1px solid rgba(255, 255, 255, 0.08)', overflow: 'visible' }}
+            >
               <div style={{ position: 'absolute', top: '-20px', left: '50%', transform: 'translateX(-50%)', background: 'var(--primary-gradient)', color: '#fff', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '1.2rem', boxShadow: '0 4px 15px rgba(255, 107, 53, 0.4)' }}>
                 3
               </div>
@@ -440,55 +518,75 @@ const Home = () => {
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: '1.6' }}>
                 Our swift riders dispatch immediately in thermal insulated bags. Enjoy hot, restaurant-quality dishes delivered within 30 minutes!
               </p>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Why Choose Us Section */}
-      <section id="features" style={{ background: 'var(--bg-section)', padding: '80px 0', borderTop: '1px solid var(--border-glass)', borderBottom: '1px solid var(--border-glass)', marginBottom: '80px' }}>
+      <motion.section 
+        id="features" 
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.15 }}
+        transition={{ duration: 0.6, ease: 'easeInOut' }}
+        style={{ background: 'var(--bg-section)', padding: '80px 0', borderTop: '1px solid var(--border-glass)', borderBottom: '1px solid var(--border-glass)', marginBottom: '80px' }}
+      >
         <div className="container">
-          <div className="reveal" style={{ textAlign: 'center', marginBottom: '56px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '56px' }}>
             <h2 style={{ fontSize: '2.2rem', marginBottom: '8px' }}>Why Choose <span className="text-gradient">QuickBite</span>?</h2>
             <p style={{ color: 'var(--text-secondary)' }}>We offer premium delivery operations designed to blow you away</p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '30px' }}>
-            <div className="glass-card reveal-left delay-1" style={{ padding: '36px 24px', textAlign: 'center', background: 'var(--bg-glass)' }}>
-              <div style={{ display: 'inline-flex', background: 'var(--primary-light)', padding: '16px', borderRadius: '20px', color: 'var(--primary)', marginBottom: '24px', border: '1px solid rgba(255,107,53,0.1)' }}>
+          <motion.div 
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.15 }}
+            style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '30px' }}
+          >
+            <motion.div variants={cardVariants} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="glass-card" style={{ padding: '36px 24px', textAlign: 'center', background: 'var(--bg-glass)', height: '100%', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ display: 'inline-flex', alignSelf: 'center', background: 'var(--primary-light)', padding: '16px', borderRadius: '20px', color: 'var(--primary)', marginBottom: '24px', border: '1px solid rgba(255,107,53,0.1)' }}>
                 <Truck size={32} />
               </div>
               <h3 style={{ fontSize: '1.25rem', marginBottom: '12px' }}>Superfast 30 Min Delivery</h3>
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: '1.6' }}>
                 Your order is prioritized immediately and dispatched in thermal insulated bags to ensure it arrives smoking hot.
               </p>
-            </div>
+            </motion.div>
 
-            <div className="glass-card reveal delay-2" style={{ padding: '36px 24px', textAlign: 'center', background: 'var(--bg-glass)' }}>
-              <div style={{ display: 'inline-flex', background: 'rgba(76, 201, 240, 0.15)', padding: '16px', borderRadius: '20px', color: '#4cc9f0', marginBottom: '24px', border: '1px solid rgba(76, 201, 240, 0.1)' }}>
+            <motion.div variants={cardVariants} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="glass-card" style={{ padding: '36px 24px', textAlign: 'center', background: 'var(--bg-glass)', height: '100%', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ display: 'inline-flex', alignSelf: 'center', background: 'rgba(76, 201, 240, 0.15)', padding: '16px', borderRadius: '20px', color: '#4cc9f0', marginBottom: '24px', border: '1px solid rgba(76, 201, 240, 0.1)' }}>
                 <Utensils size={32} />
               </div>
               <h3 style={{ fontSize: '1.25rem', marginBottom: '12px' }}>Chef Quality Standards</h3>
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: '1.6' }}>
                 Our ingredients are organic and locally sourced daily. Every single recipe is crafted by master executive chefs.
               </p>
-            </div>
+            </motion.div>
 
-            <div className="glass-card reveal-right delay-3" style={{ padding: '36px 24px', textAlign: 'center', background: 'var(--bg-glass)' }}>
-              <div style={{ display: 'inline-flex', background: 'rgba(255, 183, 3, 0.15)', padding: '16px', borderRadius: '20px', color: 'var(--star-color)', marginBottom: '24px', border: '1px solid rgba(255, 183, 3, 0.1)' }}>
+            <motion.div variants={cardVariants} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="glass-card" style={{ padding: '36px 24px', textAlign: 'center', background: 'var(--bg-glass)', height: '100%', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ display: 'inline-flex', alignSelf: 'center', background: 'rgba(255, 183, 3, 0.15)', padding: '16px', borderRadius: '20px', color: 'var(--star-color)', marginBottom: '24px', border: '1px solid rgba(255, 183, 3, 0.1)' }}>
                 <ShieldCheck size={32} />
               </div>
               <h3 style={{ fontSize: '1.25rem', marginBottom: '12px' }}>Secure Payments</h3>
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: '1.6' }}>
                 Processed through PayHere secure checkout sandbox. Completely transparent transaction guarantees for all orders.
               </p>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       {/* About Us Section */}
-      <section id="about-us" style={{ padding: '80px 0', borderTop: '1px solid var(--border-glass)', marginBottom: '80px' }}>
+      <motion.section 
+        id="about-us" 
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.15 }}
+        transition={{ duration: 0.6, ease: 'easeInOut' }}
+        style={{ padding: '80px 0', borderTop: '1px solid var(--border-glass)', marginBottom: '80px' }}
+      >
         <div className="container">
           <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '56px', alignItems: 'center' }}>
             
@@ -506,20 +604,26 @@ const Home = () => {
               </p>
               
               {/* Stats Grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
-                <div className="glass-card" style={{ padding: '16px', textAlign: 'center', background: 'rgba(20, 22, 30, 0.5)' }}>
+              <motion.div 
+                variants={staggerContainer}
+                initial="hidden"
+                whileInView="show"
+                viewport={{ once: true, amount: 0.15 }}
+                style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}
+              >
+                <motion.div variants={cardVariants} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="glass-card" style={{ padding: '16px', textAlign: 'center', background: 'rgba(20, 22, 30, 0.5)' }}>
                   <h4 style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--primary)', marginBottom: '4px' }}>15k+</h4>
                   <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 500 }}>Diners Served</p>
-                </div>
-                <div className="glass-card" style={{ padding: '16px', textAlign: 'center', background: 'rgba(20, 22, 30, 0.5)' }}>
+                </motion.div>
+                <motion.div variants={cardVariants} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="glass-card" style={{ padding: '16px', textAlign: 'center', background: 'rgba(20, 22, 30, 0.5)' }}>
                   <h4 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#4cc9f0', marginBottom: '4px' }}>50+</h4>
                   <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 500 }}>Expert Chefs</p>
-                </div>
-                <div className="glass-card" style={{ padding: '16px', textAlign: 'center', background: 'rgba(20, 22, 30, 0.5)' }}>
+                </motion.div>
+                <motion.div variants={cardVariants} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="glass-card" style={{ padding: '16px', textAlign: 'center', background: 'rgba(20, 22, 30, 0.5)' }}>
                   <h4 style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--star-color)', marginBottom: '4px' }}>25m</h4>
                   <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 500 }}>Avg Delivery</p>
-                </div>
-              </div>
+                </motion.div>
+              </motion.div>
             </div>
 
             {/* Right Column - Premium Collage / Graphic */}
@@ -538,17 +642,21 @@ const Home = () => {
               }} />
 
               {/* Main Image Container */}
-              <div style={{
-                position: 'relative',
-                zIndex: 1,
-                borderRadius: '24px',
-                overflow: 'hidden',
-                boxShadow: '0 25px 60px rgba(0, 0, 0, 0.6)',
-                border: '4px solid rgba(255, 255, 255, 0.08)',
-                width: '100%',
-                maxWidth: '450px',
-                height: '420px'
-              }}>
+              <motion.div 
+                whileHover={{ scale: 1.03, rotate: 1 }}
+                transition={{ duration: 0.4 }}
+                style={{
+                  position: 'relative',
+                  zIndex: 1,
+                  borderRadius: '24px',
+                  overflow: 'hidden',
+                  boxShadow: '0 25px 60px rgba(0, 0, 0, 0.6)',
+                  border: '4px solid rgba(255, 255, 255, 0.08)',
+                  width: '100%',
+                  maxWidth: '450px',
+                  height: '420px'
+                }}
+              >
                 <img 
                   src="https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=800&auto=format&fit=crop&q=80" 
                   alt="Elite Chef plating food" 
@@ -576,23 +684,43 @@ const Home = () => {
                     <span style={{ fontSize: '0.95rem', color: '#fff', fontWeight: 700 }}>Est. 2026</span>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </div>
 
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Buyer Reviews Section */}
-      <section className="container" style={{ marginBottom: '80px' }}>
-        <div className="reveal" style={{ textAlign: 'center', marginBottom: '56px' }}>
+      <motion.section 
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.15 }}
+        transition={{ duration: 0.6, ease: 'easeInOut' }}
+        className="container" 
+        style={{ marginBottom: '80px' }}
+      >
+        <div style={{ textAlign: 'center', marginBottom: '56px' }}>
           <h2 style={{ fontSize: '2.2rem', marginBottom: '8px' }}>What Our <span className="text-gradient">Customers Say</span></h2>
           <p style={{ color: 'var(--text-secondary)' }}>Read reviews from verified gourmet diners</p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '30px' }}>
-          {REVIEWS.map((review, index) => (
-            <div key={review.id} className={`glass-card reveal delay-${index + 1}`} style={{ padding: '30px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '220px' }}>
+        <motion.div 
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.15 }}
+          style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '30px' }}
+        >
+          {REVIEWS.map((review) => (
+            <motion.div 
+              key={review.id} 
+              variants={cardVariants}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="glass-card" 
+              style={{ padding: '30px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '220px' }}
+            >
               <div style={{ marginBottom: '20px' }}>
                 {/* Stars */}
                 <div style={{ display: 'flex', gap: '4px', marginBottom: '14px' }}>
@@ -622,14 +750,20 @@ const Home = () => {
                   <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{review.role}</p>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
-      </section>
+        </motion.div>
+      </motion.section>
 
       {/* Newsletter Section */}
-      <section className="container">
-        <div className="glass-panel reveal" style={{ 
+      <motion.section 
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.15 }}
+        transition={{ duration: 0.6, ease: 'easeInOut' }}
+        className="container"
+      >
+        <div className="glass-panel" style={{ 
           padding: '80px 48px', 
           textAlign: 'center',
           background: 'radial-gradient(circle at 10% 20%, rgba(76, 201, 240, 0.08) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(255, 107, 53, 0.08) 0%, transparent 40%), rgba(20, 22, 30, 0.65)',
@@ -719,27 +853,30 @@ const Home = () => {
                   }}
                   required
                 />
-                <button type="submit" className="btn btn-primary" style={{ 
-                  padding: '12px 28px', 
-                  borderRadius: '12px',
-                  fontWeight: 600,
-                  fontSize: '0.95rem',
-                  whiteSpace: 'nowrap',
-                  boxShadow: '0 4px 15px rgba(255, 107, 53, 0.3)',
-                  transition: 'all 0.2s ease-in-out'
-                }}
-                onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-                onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                <motion.button 
+                  type="submit" 
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="btn btn-primary" 
+                  style={{ 
+                    padding: '12px 28px', 
+                    borderRadius: '12px',
+                    fontWeight: 600,
+                    fontSize: '0.95rem',
+                    whiteSpace: 'nowrap',
+                    boxShadow: '0 4px 15px rgba(255, 107, 53, 0.3)',
+                    transition: 'all 0.2s ease-in-out'
+                  }}
                 >
                   Subscribe
-                </button>
+                </motion.button>
               </form>
             )}
           </div>
         </div>
-      </section>
+      </motion.section>
 
-    </div>
+    </motion.div>
   );
 };
 

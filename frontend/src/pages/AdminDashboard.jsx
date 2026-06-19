@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { LayoutDashboard, ShoppingBag, Plus, Trash, Edit, RefreshCw, DollarSign, Users, Award, ShieldAlert } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -266,25 +267,59 @@ const AdminDashboard = () => {
   const totalOrdersCount = orders.length;
   const pendingOrdersCount = orders.filter(o => o.orderStatus === 'Pending').length;
 
+  const pageVariants = {
+    initial: { opacity: 0, y: 15 },
+    animate: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] } },
+    exit: { opacity: 0, y: -15, transition: { duration: 0.3 } }
+  };
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.06
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 12 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: "easeOut" } }
+  };
+
   if (!user || user.role !== 'admin') {
     return (
-      <div className="container flex-center" style={{ minHeight: '60vh', flexDirection: 'column', gap: '20px' }}>
+      <motion.div 
+        variants={pageVariants}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+        className="container flex-center" 
+        style={{ minHeight: '60vh', flexDirection: 'column', gap: '20px' }}
+      >
         <ShieldAlert size={64} color="var(--warning)" />
         <h3 style={{ fontSize: '1.8rem', fontWeight: 700 }}>Access Denied</h3>
         <p style={{ color: 'var(--text-secondary)' }}>You must log in as an administrator to access the dashboard.</p>
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: 'calc(100vh - 80px)' }}>
+    <motion.div 
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      style={{ display: 'flex', minHeight: 'calc(100vh - 80px)' }}
+    >
       {/* Sidebar Menu */}
       <div className="glass-panel" style={{ width: '260px', borderRight: '1px solid var(--border-glass)', borderRadius: 0, padding: '30px 20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
         <h3 style={{ fontSize: '1.2rem', color: 'var(--text-muted)', marginBottom: '20px', textTransform: 'uppercase', letterSpacing: '0.05em', paddingLeft: '12px' }}>
           Admin Panel
         </h3>
         
-        <button 
+        <motion.button 
           onClick={() => setActiveTab('Overview')} 
           className="btn" 
           style={{ 
@@ -296,12 +331,14 @@ const AdminDashboard = () => {
             borderStyle: 'solid',
             borderWidth: '1px'
           }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
         >
           <LayoutDashboard size={18} />
           Overview
-        </button>
+        </motion.button>
 
-        <button 
+        <motion.button 
           onClick={() => setActiveTab('Manage Orders')} 
           className="btn" 
           style={{ 
@@ -313,12 +350,14 @@ const AdminDashboard = () => {
             borderStyle: 'solid',
             borderWidth: '1px'
           }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
         >
           <ShoppingBag size={18} />
           Manage Orders
-        </button>
+        </motion.button>
 
-        <button 
+        <motion.button 
           onClick={() => setActiveTab('Manage Food Items')} 
           className="btn" 
           style={{ 
@@ -330,26 +369,33 @@ const AdminDashboard = () => {
             borderStyle: 'solid',
             borderWidth: '1px'
           }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
         >
           <Plus size={18} />
           Manage Food Items
-        </button>
+        </motion.button>
       </div>
 
       {/* Main Content Area */}
-      <div style={{ flexGrow: 1, padding: '40px' }} className="animate-fade-in">
+      <div style={{ flexGrow: 1, padding: '40px' }}>
         
         {/* TAB 1: OVERVIEW */}
         {activeTab === 'Overview' && (
           <div>
-            <div className="animate-slide-up" style={{ marginBottom: '32px' }}>
+            <div style={{ marginBottom: '32px' }}>
               <h2 style={{ fontSize: '2rem', marginBottom: '8px' }}>Dashboard <span className="text-gradient">Overview</span></h2>
               <p style={{ color: 'var(--text-secondary)' }}>Real-time indicators and operational summary</p>
             </div>
 
             {/* KPI Cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '24px', marginBottom: '40px' }}>
-              <div className="glass-panel animate-slide-up" style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '20px' }}>
+            <motion.div 
+              variants={containerVariants}
+              initial="hidden"
+              animate="show"
+              style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '24px', marginBottom: '40px' }}
+            >
+              <motion.div variants={itemVariants} className="glass-panel" style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '20px' }}>
                 <div style={{ background: 'var(--success-bg)', padding: '16px', borderRadius: '16px' }}>
                   <DollarSign size={24} color="var(--success)" />
                 </div>
@@ -357,9 +403,9 @@ const AdminDashboard = () => {
                   <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Total Sales</p>
                   <h4 style={{ fontSize: '1.8rem', color: '#fff' }}>${totalSales.toFixed(2)}</h4>
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="glass-panel animate-slide-up animation-delay-1" style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '20px' }}>
+              <motion.div variants={itemVariants} className="glass-panel" style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '20px' }}>
                 <div style={{ background: 'var(--primary-light)', padding: '16px', borderRadius: '16px' }}>
                   <ShoppingBag size={24} color="var(--primary)" />
                 </div>
@@ -367,9 +413,9 @@ const AdminDashboard = () => {
                   <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Total Orders</p>
                   <h4 style={{ fontSize: '1.8rem', color: '#fff' }}>{totalOrdersCount}</h4>
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="glass-panel animate-slide-up animation-delay-2" style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '20px' }}>
+              <motion.div variants={itemVariants} className="glass-panel" style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '20px' }}>
                 <div style={{ background: 'rgba(255, 183, 3, 0.15)', padding: '16px', borderRadius: '16px' }}>
                   <RefreshCw size={24} color="var(--star-color)" />
                 </div>
@@ -377,9 +423,9 @@ const AdminDashboard = () => {
                   <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Pending Orders</p>
                   <h4 style={{ fontSize: '1.8rem', color: '#fff' }}>{pendingOrdersCount}</h4>
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="glass-panel animate-slide-up animation-delay-3" style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '20px' }}>
+              <motion.div variants={itemVariants} className="glass-panel" style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '20px' }}>
                 <div style={{ background: 'rgba(76, 201, 240, 0.15)', padding: '16px', borderRadius: '16px' }}>
                   <Users size={24} color="#4cc9f0" />
                 </div>
@@ -387,26 +433,38 @@ const AdminDashboard = () => {
                   <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Total Clients</p>
                   <h4 style={{ fontSize: '1.8rem', color: '#fff' }}>12</h4>
                 </div>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
 
             {/* Quick Summary Grid */}
-            <div className="glass-panel reveal delay-4" style={{ padding: '24px' }}>
+            <motion.div 
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.4 }}
+              className="glass-panel" 
+              style={{ padding: '24px' }}
+            >
               <h4 style={{ fontSize: '1.1rem', marginBottom: '16px' }}>System Status</h4>
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>All services are online. Connected to PayHere Sandbox Gateway. Ready to process ordering webhooks.</p>
-            </div>
+            </motion.div>
           </div>
         )}
 
         {/* TAB 2: MANAGE ORDERS */}
         {activeTab === 'Manage Orders' && (
           <div>
-            <div className="animate-slide-up" style={{ marginBottom: '32px' }}>
+            <div style={{ marginBottom: '32px' }}>
               <h2 style={{ fontSize: '2rem', marginBottom: '8px' }}>Manage <span className="text-gradient">Orders</span></h2>
               <p style={{ color: 'var(--text-secondary)' }}>Track payments and update production status</p>
             </div>
 
-            <div className="glass-panel reveal delay-1" style={{ overflowX: 'auto', borderRadius: '16px' }}>
+            <motion.div 
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="glass-panel" 
+              style={{ overflowX: 'auto', borderRadius: '16px' }}
+            >
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '700px' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border-glass)' }}>
@@ -418,9 +476,17 @@ const AdminDashboard = () => {
                     <th style={{ padding: '16px 24px', color: 'var(--text-secondary)' }}>Actions</th>
                   </tr>
                 </thead>
-                <tbody>
+                <motion.tbody
+                  variants={containerVariants}
+                  initial="hidden"
+                  animate="show"
+                >
                   {orders.map(order => (
-                    <tr key={order._id} style={{ borderBottom: '1px solid var(--border-glass)' }}>
+                    <motion.tr 
+                      key={order._id} 
+                      variants={itemVariants}
+                      style={{ borderBottom: '1px solid var(--border-glass)' }}
+                    >
                       <td style={{ padding: '16px 24px', fontWeight: 600 }}>{order._id}</td>
                       <td style={{ padding: '16px 24px' }}>
                         <div style={{ fontWeight: 600 }}>{order.customerName}</div>
@@ -434,8 +500,8 @@ const AdminDashboard = () => {
                       </td>
                       <td style={{ padding: '16px 24px' }}>
                         <span className="badge" style={{ 
-                          background: order.orderStatus === 'Pending' ? 'rgba(255,107,53,0.1)' : order.orderStatus === 'Cooking' ? 'rgba(255,183,3,0.1)' : order.orderStatus === 'Cancelled' ? 'rgba(247,37,133,0.1)' : 'rgba(76,201,240,0.1)',
-                          color: order.orderStatus === 'Pending' ? 'var(--primary)' : order.orderStatus === 'Cooking' ? 'var(--star-color)' : order.orderStatus === 'Cancelled' ? 'var(--warning)' : '#4cc9f0'
+                           background: order.orderStatus === 'Pending' ? 'rgba(255,107,53,0.1)' : order.orderStatus === 'Cooking' ? 'rgba(255,183,3,0.1)' : order.orderStatus === 'Cancelled' ? 'rgba(247,37,133,0.1)' : 'rgba(76,201,240,0.1)',
+                           color: order.orderStatus === 'Pending' ? 'var(--primary)' : order.orderStatus === 'Cooking' ? 'var(--star-color)' : order.orderStatus === 'Cancelled' ? 'var(--warning)' : '#4cc9f0'
                         }}>
                           {order.orderStatus}
                         </span>
@@ -456,18 +522,18 @@ const AdminDashboard = () => {
                           </select>
                         )}
                       </td>
-                    </tr>
+                    </motion.tr>
                   ))}
-                </tbody>
+                </motion.tbody>
               </table>
-            </div>
+            </motion.div>
           </div>
         )}
 
         {/* TAB 3: MANAGE FOOD ITEMS */}
         {activeTab === 'Manage Food Items' && (
           <div>
-            <div className="animate-slide-up" style={{ marginBottom: '32px' }}>
+            <div style={{ marginBottom: '32px' }}>
               <h2 style={{ fontSize: '2rem', marginBottom: '8px' }}>Manage <span className="text-gradient">Food Items</span></h2>
               <p style={{ color: 'var(--text-secondary)' }}>Add new dishes and edit current menu listings</p>
             </div>
@@ -475,11 +541,27 @@ const AdminDashboard = () => {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '30px', alignItems: 'flex-start' }} className="admin-food-grid">
               
               {/* Food Catalog List */}
-              <div className="glass-panel reveal delay-1" style={{ padding: '24px' }}>
+              <motion.div 
+                initial={{ opacity: 0, x: -15 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.4 }}
+                className="glass-panel" 
+                style={{ padding: '24px' }}
+              >
                 <h4 style={{ marginBottom: '20px' }}>Current Menu Items ({foods.length})</h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <motion.div 
+                  variants={containerVariants}
+                  initial="hidden"
+                  animate="show"
+                  style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}
+                >
                   {foods.map(food => (
-                    <div key={food._id} className="flex-row-center" style={{ padding: '12px', border: '1px solid var(--border-glass)', borderRadius: '12px', gap: '16px' }}>
+                    <motion.div 
+                      key={food._id} 
+                      variants={itemVariants}
+                      className="flex-row-center" 
+                      style={{ padding: '12px', border: '1px solid var(--border-glass)', borderRadius: '12px', gap: '16px' }}
+                    >
                       <img src={food.image} alt={food.name} style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '8px' }} />
                       <div style={{ flexGrow: 1 }}>
                         <div style={{ fontWeight: 600 }}>{food.name}</div>
@@ -530,30 +612,40 @@ const AdminDashboard = () => {
                       </div>
 
                       <div style={{ display: 'flex', gap: '8px' }}>
-                        <button 
+                        <motion.button 
                           onClick={() => handleStartEdit(food)}
                           className="btn btn-glass" 
                           style={{ padding: '8px', color: 'var(--success)', borderColor: 'rgba(76,201,240,0.2)' }}
                           title="Edit Food Item"
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
                         >
                           <Edit size={16} />
-                        </button>
-                        <button 
+                        </motion.button>
+                        <motion.button 
                           onClick={() => handleDeleteFood(food._id)}
                           className="btn btn-glass" 
                           style={{ padding: '8px', color: 'var(--warning)', borderColor: 'rgba(247,37,133,0.2)' }}
                           title="Delete Food Item"
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
                         >
                           <Trash size={16} />
-                        </button>
+                        </motion.button>
                       </div>
-                    </div>
+                    </motion.div>
                   ))}
-                </div>
-              </div>
+                </motion.div>
+              </motion.div>
 
               {/* Add / Edit Food Form */}
-              <div className="glass-panel reveal delay-2" style={{ padding: '24px' }}>
+              <motion.div 
+                initial={{ opacity: 0, x: 15 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.4 }}
+                className="glass-panel" 
+                style={{ padding: '24px' }}
+              >
                 <h4 style={{ marginBottom: '20px' }}>{editingFoodId ? 'Edit Food Item' : 'Add Food Item'}</h4>
                 <form onSubmit={handleSaveFood} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   
@@ -619,30 +711,38 @@ const AdminDashboard = () => {
                     />
                   </div>
 
-                  <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '10px' }}>
+                  <motion.button 
+                    type="submit" 
+                    className="btn btn-primary" 
+                    style={{ width: '100%', marginTop: '10px' }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
                     {editingFoodId ? 'Save Changes' : 'Add to Menu'}
-                  </button>
+                  </motion.button>
 
                   {editingFoodId && (
-                    <button 
+                    <motion.button 
                       type="button" 
                       onClick={resetForm} 
                       className="btn btn-secondary" 
                       style={{ width: '100%' }}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                     >
                       Cancel Edit
-                    </button>
+                    </motion.button>
                   )}
 
                 </form>
-              </div>
+              </motion.div>
 
             </div>
           </div>
         )}
 
       </div>
-    </div>
+    </motion.div>
   );
 };
 
