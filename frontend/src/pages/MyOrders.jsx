@@ -257,6 +257,11 @@ const MyOrders = () => {
                     <span className={`badge ${order.paymentStatus === 'Paid' ? 'badge-success' : 'badge-danger'}`}>
                       {order.paymentStatus}
                     </span>
+                    {order.paymentMethod && (
+                      <span className="badge badge-glass" style={{ textTransform: 'uppercase', fontSize: '0.75rem', background: 'rgba(255, 255, 255, 0.05)', color: 'var(--text-secondary)', border: '1px solid var(--border-glass)' }}>
+                        {order.paymentMethod === 'COD' ? 'Cash on Delivery (COD)' : 'Online Card'}
+                      </span>
+                    )}
                   </div>
                 </div>
 

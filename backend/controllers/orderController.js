@@ -29,11 +29,13 @@ const generatePayHereHash = (merchantId, orderId, amount, currency, merchantSecr
 // @access  Private
 export const checkout = async (req, res) => {
   try {
-    const { items, totalAmount, deliveryAddress, phone, frontendUrl } = req.body;
+    const { items, totalAmount, deliveryAddress, phone, frontendUrl, paymentMethod } = req.body;
 
     if (!items || items.length === 0) {
       return res.status(400).json({ message: 'No items in cart' });
     }
+
+    const payMethod = paymentMethod || 'Card';
 
     // Create unique order record in Database
     const order = await Order.create({
@@ -43,8 +45,18 @@ export const checkout = async (req, res) => {
       deliveryAddress,
       phone,
       paymentStatus: 'Unpaid',
+      paymentMethod: payMethod,
       orderStatus: 'Pending'
     });
+
+    // If it's Cash on Delivery, we don't need PayHere signature generation. We return success immediately.
+    if (payMethod === 'COD') {
+      return res.status(201).json({
+        message: 'Order placed successfully (Cash on Delivery)',
+        orderId: order._id,
+        paymentMethod: 'COD'
+      });
+    }
 
     // PayHere configurations
     const merchantId = process.env.PAYHERE_MERCHANT_ID;
@@ -86,6 +98,7 @@ export const checkout = async (req, res) => {
 
     res.status(201).json({
       orderId: order._id,
+      paymentMethod: 'Card',
       paymentParams
     });
   } catch (error) {
@@ -196,6 +209,7 @@ export const getAllOrders = async (req, res) => {
       items: order.items,
       totalAmount: order.totalAmount,
       paymentStatus: order.paymentStatus,
+      paymentMethod: order.paymentMethod || 'Card',
       orderStatus: order.orderStatus
     }));
 

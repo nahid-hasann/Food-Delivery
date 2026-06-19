@@ -17,6 +17,7 @@ const CartSidebar = () => {
   const [showCheckoutForm, setShowCheckoutForm] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isDemoMode, setIsDemoMode] = useState(true);
+  const [paymentMethod, setPaymentMethod] = useState('Card');
 
   if (!isCartOpen || user?.role === 'admin') return null;
 
@@ -55,7 +56,8 @@ const CartSidebar = () => {
           totalAmount: cartTotal,
           deliveryAddress: address,
           phone: phone,
-          frontendUrl: window.location.origin
+          frontendUrl: window.location.origin,
+          paymentMethod: paymentMethod
         })
       });
 
@@ -65,42 +67,52 @@ const CartSidebar = () => {
         throw new Error(orderData.message || 'Failed to place order');
       }
 
-      if (isDemoMode) {
-        // Bypass redirect and simulate success directly for local offline testing
-        const simulateSuccessResponse = await fetch(`http://localhost:5005/api/orders/simulate-success/${orderData.orderId}`, {
-          method: 'POST'
-        });
-        
+      if (paymentMethod === 'COD') {
+        // Cash on Delivery Order Success
         setIsProcessing(false);
         clearCart();
         toggleCart();
-        showToast('🎉 Mock Payment Successful! Your order has been placed and marked as Paid.', 'success');
+        showToast('🎉 Cash on Delivery order placed successfully! Pay upon delivery.', 'success');
         navigate('/my-orders');
       } else {
-        // Proceed to real PayHere Sandbox
-        const paymentParams = orderData.paymentParams;
-        
-        // Create a temporary HTML form and submit it
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = 'https://sandbox.payhere.lk/pay/checkout'; // PayHere Sandbox URL
-        
-        // Append all payment parameters as hidden inputs
-        Object.keys(paymentParams).forEach(key => {
-          const input = document.createElement('input');
-          input.type = 'hidden';
-          input.name = key;
-          input.value = paymentParams[key];
-          form.appendChild(input);
-        });
-        
-        document.body.appendChild(form);
-        form.submit();
-        
-        // Clear local cart
-        clearCart();
-        toggleCart();
-        setIsProcessing(false);
+        // Online Card Order Success (Demo Mode or PayHere)
+        if (isDemoMode) {
+          // Bypass redirect and simulate success directly for local offline testing
+          const simulateSuccessResponse = await fetch(`http://localhost:5005/api/orders/simulate-success/${orderData.orderId}`, {
+            method: 'POST'
+          });
+          
+          setIsProcessing(false);
+          clearCart();
+          toggleCart();
+          showToast('🎉 Mock Payment Successful! Your order has been placed and marked as Paid.', 'success');
+          navigate('/my-orders');
+        } else {
+          // Proceed to real PayHere Sandbox
+          const paymentParams = orderData.paymentParams;
+          
+          // Create a temporary HTML form and submit it
+          const form = document.createElement('form');
+          form.method = 'POST';
+          form.action = 'https://sandbox.payhere.lk/pay/checkout'; // PayHere Sandbox URL
+          
+          // Append all payment parameters as hidden inputs
+          Object.keys(paymentParams).forEach(key => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+            input.value = paymentParams[key];
+            form.appendChild(input);
+          });
+          
+          document.body.appendChild(form);
+          form.submit();
+          
+          // Clear local cart
+          clearCart();
+          toggleCart();
+          setIsProcessing(false);
+        }
       }
 
     } catch (error) {
@@ -245,24 +257,54 @@ const CartSidebar = () => {
                   required
                 />
 
-                <div className="flex-row-center" style={{ margin: '8px 0' }}>
+                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', margin: '4px 0 8px' }}>
+                  <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 500 }}>Payment Method</label>
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <label className="glass-panel" style={{ flexGrow: 1, display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', borderRadius: '12px', cursor: 'pointer', border: paymentMethod === 'Card' ? '1px solid var(--primary)' : '1px solid var(--border-glass)', background: paymentMethod === 'Card' ? 'rgba(255, 107, 53, 0.05)' : 'none' }}>
+                      <input 
+                        type="radio" 
+                        name="paymentMethod" 
+                        value="Card" 
+                        checked={paymentMethod === 'Card'} 
+                        onChange={() => setPaymentMethod('Card')}
+                        style={{ accentColor: 'var(--primary)', cursor: 'pointer' }}
+                      />
+                      <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Online Card</span>
+                    </label>
+                    <label className="glass-panel" style={{ flexGrow: 1, display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', borderRadius: '12px', cursor: 'pointer', border: paymentMethod === 'COD' ? '1px solid var(--primary)' : '1px solid var(--border-glass)', background: paymentMethod === 'COD' ? 'rgba(255, 107, 53, 0.05)' : 'none' }}>
+                      <input 
+                        type="radio" 
+                        name="paymentMethod" 
+                        value="COD" 
+                        checked={paymentMethod === 'COD'} 
+                        onChange={() => setPaymentMethod('COD')}
+                        style={{ accentColor: 'var(--primary)', cursor: 'pointer' }}
+                      />
+                      <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Cash On Delivery</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="flex-row-center" style={{ margin: '4px 0' }}>
                   <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Total Bill</span>
                   <span style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary)' }}>${cartTotal.toFixed(2)}</span>
                 </div>
 
-                {/* Demo Mode Toggle */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '4px 0 12px', background: 'rgba(255, 107, 53, 0.08)', padding: '10px', borderRadius: '8px', border: '1px dashed rgba(255, 107, 53, 0.2)' }}>
-                  <input 
-                    type="checkbox" 
-                    id="demoMode" 
-                    checked={isDemoMode} 
-                    onChange={(e) => setIsDemoMode(e.target.checked)}
-                    style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: 'var(--primary)' }}
-                  />
-                  <label htmlFor="demoMode" style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 600, cursor: 'pointer', userSelect: 'none' }}>
-                    ⚡ Demo Mode (Simulate Instant Payment)
-                  </label>
-                </div>
+                {/* Demo Mode Toggle (Only visible if Online Card is selected) */}
+                {paymentMethod === 'Card' && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '4px 0 12px', background: 'rgba(255, 107, 53, 0.08)', padding: '10px', borderRadius: '8px', border: '1px dashed rgba(255, 107, 53, 0.2)' }}>
+                    <input 
+                      type="checkbox" 
+                      id="demoMode" 
+                      checked={isDemoMode} 
+                      onChange={(e) => setIsDemoMode(e.target.checked)}
+                      style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: 'var(--primary)' }}
+                    />
+                    <label htmlFor="demoMode" style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 600, cursor: 'pointer', userSelect: 'none' }}>
+                      ⚡ Demo Mode (Simulate Instant Payment)
+                    </label>
+                  </div>
+                )}
 
                 <button 
                   type="submit" 
@@ -270,8 +312,14 @@ const CartSidebar = () => {
                   style={{ width: '100%', padding: '12px', gap: '8px' }}
                   disabled={isProcessing}
                 >
-                  <CreditCard size={18} />
-                  {isProcessing ? 'Processing...' : isDemoMode ? 'Place Order (Demo Pay)' : 'Proceed to PayHere Sandbox'}
+                  {paymentMethod === 'Card' ? <CreditCard size={18} /> : <ShoppingBag size={18} />}
+                  {isProcessing 
+                    ? 'Processing...' 
+                    : paymentMethod === 'COD' 
+                      ? 'Place Order (Cash on Delivery)' 
+                      : isDemoMode 
+                        ? 'Place Order (Demo Pay)' 
+                        : 'Proceed to PayHere Sandbox'}
                 </button>
               </form>
             )}
