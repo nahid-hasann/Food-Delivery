@@ -4,6 +4,7 @@ import Swal from 'sweetalert2';
 import { LayoutDashboard, ShoppingBag, Plus, Trash, Edit, RefreshCw, DollarSign, Users, Award, ShieldAlert } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import API_URL from '../config';
 
 // Mock data for Admin Panel Preview (Fallback)
 const MOCK_ORDERS = [
@@ -70,7 +71,7 @@ const AdminDashboard = () => {
 
     const fetchOrders = async () => {
       try {
-        const response = await fetch('http://localhost:5005/api/orders', {
+        const response = await fetch(`${API_URL}/api/orders`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -89,7 +90,7 @@ const AdminDashboard = () => {
 
     const fetchFoods = async () => {
       try {
-        const response = await fetch('http://localhost:5005/api/foods');
+        const response = await fetch(`${API_URL}/api/foods`);
         if (response.ok) {
           const data = await response.json();
           setFoods(data);
@@ -110,7 +111,7 @@ const AdminDashboard = () => {
   const handleUpdateStatus = async (orderId, newStatus) => {
     try {
       const token = localStorage.getItem('quickbite_token');
-      const response = await fetch(`http://localhost:5005/api/orders/${orderId}/status`, {
+      const response = await fetch(`${API_URL}/api/orders/${orderId}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -158,7 +159,7 @@ const AdminDashboard = () => {
       if (result.isConfirmed) {
         try {
           const token = localStorage.getItem('quickbite_token');
-          const response = await fetch(`http://localhost:5005/api/foods/${id}`, {
+          const response = await fetch(`${API_URL}/api/foods/${id}`, {
             method: 'DELETE',
             headers: {
               'Authorization': `Bearer ${token}`
@@ -187,7 +188,7 @@ const AdminDashboard = () => {
     try {
       const token = localStorage.getItem('quickbite_token');
       const updatedStatus = food.isAvailable === false ? true : false;
-      const response = await fetch(`http://localhost:5005/api/foods/${food._id}`, {
+      const response = await fetch(`${API_URL}/api/foods/${food._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -241,7 +242,7 @@ const AdminDashboard = () => {
     if (editingFoodId) {
       // Edit Mode
       try {
-        const response = await fetch(`http://localhost:5005/api/foods/${editingFoodId}`, {
+        const response = await fetch(`${API_URL}/api/foods/${editingFoodId}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -271,7 +272,7 @@ const AdminDashboard = () => {
     } else {
       // Add Mode
       try {
-        const response = await fetch('http://localhost:5005/api/foods', {
+        const response = await fetch(`${API_URL}/api/foods`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

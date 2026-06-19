@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ShoppingBag, Clock, CheckCircle, Truck, Utensils, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import API_URL from '../config';
 
 // Mock orders for testing order status and payment status UI
 const MOCK_ORDERS = [
@@ -64,7 +65,7 @@ const MyOrders = () => {
     const handlePaymentRedirect = async () => {
       if (paymentStatusParam === 'success' && orderIdParam) {
         try {
-          await fetch(`http://localhost:5005/api/orders/simulate-success/${orderIdParam}`, {
+          await fetch(`${API_URL}/api/orders/simulate-success/${orderIdParam}`, {
             method: 'POST'
           });
           // Clean the query parameters from URL without reloading
@@ -85,7 +86,7 @@ const MyOrders = () => {
           return;
         }
 
-        const response = await fetch('http://localhost:5005/api/orders/my-orders', {
+        const response = await fetch(`${API_URL}/api/orders/my-orders`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -120,7 +121,7 @@ const MyOrders = () => {
   const executeCancelOrder = async (orderId) => {
     try {
       const token = localStorage.getItem('quickbite_token');
-      const response = await fetch(`http://localhost:5005/api/orders/${orderId}/cancel`, {
+      const response = await fetch(`${API_URL}/api/orders/${orderId}/cancel`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`

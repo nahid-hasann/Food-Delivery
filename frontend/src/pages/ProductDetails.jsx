@@ -6,6 +6,7 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useWishlist } from '../context/WishlistContext';
+import API_URL from '../config';
 
 // High-quality fallback data for food items (in case backend/DB is not active)
 const MOCK_FOODS = [
@@ -32,7 +33,7 @@ const ProductDetails = () => {
   useEffect(() => {
     const fetchFoodDetails = async () => {
       try {
-        const response = await fetch(`http://localhost:5005/api/foods/${id}`);
+        const response = await fetch(`${API_URL}/api/foods/${id}`);
         if (response.ok) {
           const data = await response.json();
           setFood(data);

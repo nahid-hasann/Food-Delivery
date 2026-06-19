@@ -4,6 +4,7 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
+import API_URL from '../config';
 
 const CartSidebar = () => {
   const { cartItems, isCartOpen, toggleCart, updateQuantity, removeFromCart, cartTotal, clearCart } = useCart();
@@ -40,7 +41,7 @@ const CartSidebar = () => {
       const token = localStorage.getItem('quickbite_token');
       
       // Post order details to backend to get PayHere parameters
-      const response = await fetch('http://localhost:5005/api/orders/checkout', {
+      const response = await fetch(`${API_URL}/api/orders/checkout`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -78,7 +79,7 @@ const CartSidebar = () => {
         // Online Card Order Success (Demo Mode or PayHere)
         if (isDemoMode) {
           // Bypass redirect and simulate success directly for local offline testing
-          const simulateSuccessResponse = await fetch(`http://localhost:5005/api/orders/simulate-success/${orderData.orderId}`, {
+          const simulateSuccessResponse = await fetch(`${API_URL}/api/orders/simulate-success/${orderData.orderId}`, {
             method: 'POST'
           });
           
