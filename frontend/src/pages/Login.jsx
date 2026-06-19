@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 const Login = () => {
   const { login, register } = useAuth();
   const navigate = useNavigate();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -87,7 +88,7 @@ const Login = () => {
 
   return (
     <div className="container flex-center animate-fade-in" style={{ minHeight: 'calc(100vh - 160px)', paddingTop: '40px', paddingBottom: '40px' }}>
-      <div className="glass-panel" style={{ width: '100%', maxWidth: '450px', padding: '40px', boxShadow: 'var(--shadow-lg)' }}>
+      <div className="glass-panel reveal" style={{ width: '100%', maxWidth: '450px', padding: '40px', boxShadow: 'var(--shadow-lg)' }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <h2 style={{ fontSize: '2rem', marginBottom: '8px' }}>Welcome <span className="text-gradient">Back</span></h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Sign in to satisfy your cravings</p>

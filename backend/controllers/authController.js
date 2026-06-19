@@ -39,6 +39,7 @@ export const registerUser = async (req, res) => {
           name: user.name,
           email: user.email,
           phone: user.phone,
+          address: user.address,
           role: user.role
         }
       });
@@ -77,6 +78,7 @@ export const loginUser = async (req, res) => {
         name: user.name,
         email: user.email,
         phone: user.phone,
+        address: user.address,
         role: user.role
       }
     });
@@ -92,6 +94,41 @@ export const getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Update user profile (name, phone, address, password)
+// @route   PUT /api/auth/profile
+// @access  Private
+export const updateProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('+password');
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const { name, phone, address, newPassword } = req.body;
+
+    if (name) user.name = name;
+    if (phone) user.phone = phone;
+    if (address !== undefined) user.address = address;
+    if (newPassword) user.password = newPassword;
+
+    await user.save();
+
+    res.json({
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        address: user.address,
+        role: user.role
+      }
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

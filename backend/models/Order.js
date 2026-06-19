@@ -46,7 +46,7 @@ const orderSchema = new mongoose.Schema({
   },
   orderStatus: {
     type: String,
-    enum: ['Pending', 'Cooking', 'Out for Delivery', 'Delivered'],
+    enum: ['Pending', 'Cooking', 'Out for Delivery', 'Delivered', 'Cancelled'],
     default: 'Pending'
   },
   payhereOrderId: {

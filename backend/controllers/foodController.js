@@ -6,7 +6,7 @@ import FoodItem from '../models/FoodItem.js';
 export const getFoodItems = async (req, res) => {
   try {
     const { category, search } = req.query;
-    let query = { isAvailable: true };
+    let query = {};
 
     // Apply category filter
     if (category && category !== 'All') {

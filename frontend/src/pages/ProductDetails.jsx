@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Plus, Minus, ShoppingCart, Star, Sparkles } from 'lucide-react';
+import { ChevronLeft, Plus, Minus, ShoppingCart, Star, Sparkles, Heart } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { useWishlist } from '../context/WishlistContext';
 
 // High-quality fallback data for food items (in case backend/DB is not active)
 const MOCK_FOODS = [
@@ -21,6 +22,7 @@ const ProductDetails = () => {
   const { addToCart } = useCart();
   const { user } = useAuth();
   const { showToast } = useToast();
+  const { toggleWishlist, isInWishlist } = useWishlist();
 
   const [food, setFood] = useState(null);
   const [quantity, setQuantity] = useState(1);
@@ -66,8 +68,33 @@ const ProductDetails = () => {
 
   if (loading) {
     return (
-      <div className="container flex-center" style={{ minHeight: '60vh' }}>
-        <p style={{ color: 'var(--text-secondary)' }}>Loading food details...</p>
+      <div className="container animate-fade-in" style={{ paddingTop: '40px', paddingBottom: '80px' }}>
+        <div className="skeleton" style={{ width: '80px', height: '36px', borderRadius: '8px', marginBottom: '32px' }} />
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', 
+          gap: '40px',
+          alignItems: 'start'
+        }}>
+          {/* Left Column Image Skeleton */}
+          <div className="glass-card" style={{ padding: '0', overflow: 'hidden', borderRadius: '24px', border: '1px solid var(--border-glass)' }}>
+            <div className="skeleton" style={{ width: '100%', height: '400px' }} />
+          </div>
+          {/* Right Column Details Skeleton */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div>
+              <div className="skeleton skeleton-title" style={{ width: '80%', height: '36px' }} />
+              <div className="skeleton" style={{ width: '150px', height: '20px', borderRadius: '6px' }} />
+            </div>
+            <div className="skeleton" style={{ width: '80px', height: '24px', borderRadius: '12px' }} />
+            <div className="skeleton" style={{ width: '100px', height: '36px', borderRadius: '8px' }} />
+            <div style={{ borderTop: '1px solid var(--border-glass)', borderBottom: '1px solid var(--border-glass)', padding: '20px 0' }}>
+              <div className="skeleton skeleton-text" style={{ width: '100%' }} />
+              <div className="skeleton skeleton-text" style={{ width: '90%' }} />
+              <div className="skeleton skeleton-text" style={{ width: '95%' }} />
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -112,6 +139,35 @@ const ProductDetails = () => {
               alt={food.name} 
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
+            {/* Out of Stock Image Overlay */}
+            {food.isAvailable === false && (
+              <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                background: 'rgba(20, 22, 30, 0.6)',
+                backdropFilter: 'blur(3px)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 5
+              }}>
+                <span style={{
+                  background: 'var(--warning-bg)',
+                  color: 'var(--warning)',
+                  border: '1px solid rgba(247, 37, 133, 0.4)',
+                  padding: '10px 24px',
+                  borderRadius: '30px',
+                  fontWeight: 700,
+                  fontSize: '1.1rem',
+                  letterSpacing: '0.05em'
+                }}>
+                  OUT OF STOCK
+                </span>
+              </div>
+            )}
             {/* Badges on Image */}
             <div style={{ position: 'absolute', top: '20px', right: '20px', background: 'rgba(20, 22, 30, 0.85)', padding: '6px 14px', borderRadius: '30px', border: '1px solid var(--border-glass)', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Star size={16} color="var(--star-color)" fill="var(--star-color)" />
@@ -127,12 +183,66 @@ const ProductDetails = () => {
         <div className="glass-panel" style={{ padding: '40px', display: 'flex', flexDirection: 'column', gap: '24px', borderRadius: '24px', border: '1px solid var(--border-glass)', boxShadow: 'var(--shadow-md)' }}>
           
           <div>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'var(--primary-light)', padding: '4px 12px', borderRadius: '20px', color: 'var(--primary)', fontWeight: 600, fontSize: '0.8rem', marginBottom: '14px', border: '1px solid rgba(255, 107, 53, 0.1)' }}>
-              <Sparkles size={12} />
-              Chef Recommendation
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div>
+              {food.isAvailable === false ? (
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'var(--warning-bg)', padding: '4px 12px', borderRadius: '20px', color: 'var(--warning)', fontWeight: 600, fontSize: '0.8rem', marginBottom: '14px', border: '1px solid rgba(247, 37, 133, 0.2)' }}>
+                  Out of Stock
+                </div>
+              ) : (
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'var(--primary-light)', padding: '4px 12px', borderRadius: '20px', color: 'var(--primary)', fontWeight: 600, fontSize: '0.8rem', marginBottom: '14px', border: '1px solid rgba(255, 107, 53, 0.1)' }}>
+                  <Sparkles size={12} />
+                  Chef Recommendation
+                </div>
+              )}
+              <h1 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '8px', color: 'var(--text-primary)', lineHeight: 1.1 }}>{food.name}</h1>
+              <p style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--primary)' }}>${food.price.toFixed(2)}</p>
             </div>
-            <h1 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '8px', color: '#fff', lineHeight: 1.1 }}>{food.name}</h1>
-            <p style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--primary)' }}>${food.price.toFixed(2)}</p>
+            
+            {user?.role !== 'admin' && (
+              <button
+                onClick={() => {
+                  if (!user) {
+                    showToast('Please login to add favorites.', 'error');
+                    return;
+                  }
+                  const isFav = isInWishlist(food._id);
+                  toggleWishlist(food);
+                  showToast(isFav ? `${food.name} removed from favorites.` : `${food.name} added to favorites.`, 'success');
+                }}
+                className="btn btn-glass"
+                style={{
+                  padding: '10px',
+                  borderRadius: '50%',
+                  width: '44px',
+                  height: '44px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: 'rgba(20, 22, 30, 0.6)',
+                  border: '1px solid var(--border-glass)',
+                  boxShadow: 'var(--shadow-sm)',
+                  transition: 'all 0.2s ease',
+                  cursor: 'pointer'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.1)';
+                  e.currentTarget.style.background = 'rgba(20, 22, 30, 0.85)';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.background = 'rgba(20, 22, 30, 0.6)';
+                }}
+              >
+                <Heart 
+                  size={22} 
+                  color={isInWishlist(food._id) ? 'var(--primary)' : 'var(--text-secondary)'} 
+                  fill={isInWishlist(food._id) ? 'var(--primary)' : 'none'}
+                  style={{ transition: 'fill 0.2s ease, color 0.2s ease' }}
+                />
+              </button>
+            )}
+          </div>
           </div>
 
           <div>
@@ -144,33 +254,45 @@ const ProductDetails = () => {
             {user?.role !== 'admin' ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
                 {/* Quantity Control */}
-                <div className="glass-panel" style={{ display: 'inline-flex', alignItems: 'center', padding: '6px 14px', borderRadius: '12px', border: '1px solid var(--border-glass)', gap: '16px' }}>
+                <div className="glass-panel" style={{ display: 'inline-flex', alignItems: 'center', padding: '6px 14px', borderRadius: '12px', border: '1px solid var(--border-glass)', gap: '16px', opacity: food.isAvailable !== false ? 1 : 0.5 }}>
                   <button 
                     onClick={handleDecrement}
+                    disabled={food.isAvailable === false}
                     className="btn-circle btn-glass"
-                    style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
+                    style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, cursor: food.isAvailable !== false ? 'pointer' : 'not-allowed' }}
                   >
                     <Minus size={14} />
                   </button>
-                  <span style={{ fontSize: '1.1rem', fontWeight: 700, minWidth: '20px', textAlign: 'center' }}>{quantity}</span>
+                  <span style={{ fontSize: '1.1rem', fontWeight: 700, minWidth: '20px', textAlign: 'center' }}>{food.isAvailable !== false ? quantity : 0}</span>
                   <button 
                     onClick={handleIncrement}
+                    disabled={food.isAvailable === false}
                     className="btn-circle btn-glass"
-                    style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
+                    style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, cursor: food.isAvailable !== false ? 'pointer' : 'not-allowed' }}
                   >
                     <Plus size={14} />
                   </button>
                 </div>
 
                 {/* Add to Cart Button */}
-                <button 
-                  onClick={handleAddToCartClick}
-                  className="btn btn-primary" 
-                  style={{ padding: '14px 28px', borderRadius: '12px', flexGrow: 1, gap: '8px', minWidth: '180px' }}
-                >
-                  <ShoppingCart size={18} />
-                  Add to Cart (${(food.price * quantity).toFixed(2)})
-                </button>
+                {food.isAvailable !== false ? (
+                  <button 
+                    onClick={handleAddToCartClick}
+                    className="btn btn-primary" 
+                    style={{ padding: '14px 28px', borderRadius: '12px', flexGrow: 1, gap: '8px', minWidth: '180px' }}
+                  >
+                    <ShoppingCart size={18} />
+                    Add to Cart (${(food.price * quantity).toFixed(2)})
+                  </button>
+                ) : (
+                  <button 
+                    disabled
+                    className="btn btn-secondary" 
+                    style={{ padding: '14px 28px', borderRadius: '12px', flexGrow: 1, gap: '8px', minWidth: '180px', cursor: 'not-allowed', opacity: 0.6 }}
+                  >
+                    Out of Stock
+                  </button>
+                )}
               </div>
             ) : (
               <div className="glass-panel" style={{ padding: '16px 20px', textAlign: 'center', background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border-glass)', borderRadius: '12px', color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '0.9rem' }}>

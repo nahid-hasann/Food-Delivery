@@ -37,16 +37,16 @@ const Footer = () => {
             </p>
             {/* Social Icons */}
             <div style={{ display: 'flex', gap: '12px' }}>
-              <a href="#" className="btn btn-glass btn-circle" style={{ width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <a href="https://www.facebook.com/mh.na.hi.d.554448/" target="_blank" rel="noopener noreferrer" className="btn btn-glass btn-circle" style={{ width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Facebook">
                 <Facebook size={16} />
               </a>
-              <a href="#" className="btn btn-glass btn-circle" style={{ width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <a href="https://x.com/NKNahid1001" target="_blank" rel="noopener noreferrer" className="btn btn-glass btn-circle" style={{ width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Twitter (X)">
                 <Twitter size={16} />
               </a>
-              <a href="#" className="btn btn-glass btn-circle" style={{ width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <a href="https://www.instagram.com/bikelovernahid/" target="_blank" rel="noopener noreferrer" className="btn btn-glass btn-circle" style={{ width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Instagram">
                 <Instagram size={16} />
               </a>
-              <a href="#" className="btn btn-glass btn-circle" style={{ width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <a href="https://github.com/nahid-hasann" target="_blank" rel="noopener noreferrer" className="btn btn-glass btn-circle" style={{ width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="GitHub">
                 <Github size={16} />
               </a>
             </div>

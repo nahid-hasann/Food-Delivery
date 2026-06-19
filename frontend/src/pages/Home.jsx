@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Search, Star, ShoppingCart, Sparkles, ArrowRight, Truck, Utensils, ShieldCheck, Mail } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Search, Star, ShoppingCart, Sparkles, ArrowRight, Truck, Utensils, ShieldCheck, Mail, Heart } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useWishlist } from '../context/WishlistContext';
+import { useToast } from '../context/ToastContext';
 
 // High-quality fallback data for food items (in case backend/DB is not active)
 const MOCK_FOODS = [
@@ -44,11 +46,40 @@ const REVIEWS = [
 const Home = () => {
   const { addToCart } = useCart();
   const { user } = useAuth();
+  const { toggleWishlist, isInWishlist } = useWishlist();
+  const { showToast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const [foods, setFoods] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+
+  // Handle cross-page scrolling
+  useEffect(() => {
+    if (location.state && location.state.scrollTo) {
+      const sectionId = location.state.scrollTo;
+      // Reset navigation state to prevent scrolling again on navigation/refresh
+      window.history.replaceState({}, document.title);
+      
+      const timer = setTimeout(() => {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          const offset = 90;
+          const bodyRect = document.body.getBoundingClientRect().top;
+          const elementRect = element.getBoundingClientRect().top;
+          const elementPosition = elementRect - bodyRect;
+          const offsetPosition = elementPosition - offset;
+          
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
+        }
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [location]);
 
   // Newsletter state
   const [newsletterEmail, setNewsletterEmail] = useState('');
@@ -118,26 +149,26 @@ const Home = () => {
         boxShadow: 'var(--shadow-lg)'
       }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--primary-light)', padding: '6px 16px', borderRadius: '30px', color: 'var(--primary)', marginBottom: '24px', fontWeight: 600, fontSize: '0.9rem', border: '1px solid rgba(255, 107, 53, 0.2)' }}>
+          <div className="animate-slide-up" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--primary-light)', padding: '6px 16px', borderRadius: '30px', color: 'var(--primary)', marginBottom: '24px', fontWeight: 600, fontSize: '0.9rem', border: '1px solid rgba(255, 107, 53, 0.2)' }}>
             <Sparkles size={16} />
             The Ultimate Food Experience
           </div>
-          <h1 style={{ fontSize: '3.5rem', fontWeight: 800, marginBottom: '20px', lineHeight: 1.1 }}>
+          <h1 className="animate-slide-up animation-delay-1" style={{ fontSize: '3.5rem', fontWeight: 800, marginBottom: '20px', lineHeight: 1.1 }}>
             Satisfy Your Cravings – <span className="text-gradient">Delivered in Minutes!</span>
           </h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '1.2rem', marginBottom: '40px', lineHeight: 1.6 }}>
+          <p className="animate-slide-up animation-delay-2" style={{ color: 'var(--text-secondary)', fontSize: '1.2rem', marginBottom: '40px', lineHeight: 1.6 }}>
             Choose from a wide variety of delicious meals made with fresh ingredients. Quick delivery right to your doorstep.
           </p>
 
           {/* Search bar */}
-          <div className="glass-panel" style={{ display: 'flex', alignItems: 'center', padding: '6px 12px', maxWidth: '600px', margin: '0 auto', gap: '12px' }}>
+          <div className="glass-panel animate-slide-up animation-delay-3" style={{ display: 'flex', alignItems: 'center', padding: '6px 12px', maxWidth: '600px', margin: '0 auto', gap: '12px' }}>
             <Search color="var(--text-muted)" size={20} />
             <input 
               type="text" 
               placeholder="Search for pizza, burger, cake..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ flexGrow: 1, background: 'none', border: 'none', color: '#fff', fontSize: '1rem', padding: '10px 0' }}
+              style={{ flexGrow: 1, background: 'none', border: 'none', color: 'var(--text-primary)', fontSize: '1rem', padding: '10px 0' }}
             />
             <button onClick={() => navigate('/menu')} className="btn btn-primary" style={{ padding: '10px 24px' }}>Explore Menu</button>
           </div>
@@ -146,13 +177,13 @@ const Home = () => {
 
       {/* Main Catalog Section */}
       <section className="container" style={{ marginBottom: '80px' }}>
-        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+        <div className="reveal" style={{ textAlign: 'center', marginBottom: '40px' }}>
           <h2 style={{ fontSize: '2.2rem', marginBottom: '8px' }}>Featured <span className="text-gradient">Dishes</span></h2>
           <p style={{ color: 'var(--text-secondary)' }}>Check out our top culinary recommendations for today</p>
         </div>
 
         {/* Category Filters */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap', marginBottom: '40px' }}>
+        <div className="reveal delay-1" style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap', marginBottom: '40px' }}>
           {categories.map(category => (
             <button
               key={category}
@@ -167,12 +198,27 @@ const Home = () => {
 
         {/* Food Items Grid (Limited to 6 Items) */}
         {loading ? (
-          <p style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>Loading catalog...</p>
+          <div className="grid-responsive">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <div key={index} className="glass-card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                <div className="skeleton skeleton-image" />
+                <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                  <div className="skeleton skeleton-title" style={{ width: '70%' }} />
+                  <div className="skeleton skeleton-text" style={{ width: '100%' }} />
+                  <div className="skeleton skeleton-text" style={{ width: '90%', marginBottom: '24px' }} />
+                  <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '1px solid var(--border-glass)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div className="skeleton" style={{ width: '60px', height: '24px', borderRadius: '6px' }} />
+                    <div className="skeleton" style={{ width: '100px', height: '36px', borderRadius: '8px' }} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         ) : (
           <>
             <div className="grid-responsive">
-              {homeDisplayFoods.map(food => (
-                <div key={food._id} className="glass-card animate-fade-in" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+              {homeDisplayFoods.map((food, index) => (
+                <div key={food._id} className={`glass-card reveal delay-${(index % 3) + 1}`} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                   {/* Image Container */}
                   <div 
                     onClick={() => navigate(`/food/${food._id}`)} 
@@ -185,6 +231,85 @@ const Home = () => {
                       onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.08)'}
                       onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
                     />
+                    
+                    {/* Heart/Wishlist Button Overlay */}
+                    {user?.role !== 'admin' && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!user) {
+                            showToast('Please login to add favorites.', 'error');
+                            return;
+                          }
+                          const isFav = isInWishlist(food._id);
+                          toggleWishlist(food);
+                          showToast(isFav ? `${food.name} removed from favorites.` : `${food.name} added to favorites.`, 'success');
+                        }}
+                        style={{
+                          position: 'absolute',
+                          top: '12px',
+                          left: '12px',
+                          background: 'rgba(20, 22, 30, 0.85)',
+                          border: '1px solid var(--border-glass)',
+                          borderRadius: '50%',
+                          width: '36px',
+                          height: '36px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          zIndex: 10,
+                          boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
+                        }}
+                        onMouseOver={(e) => {
+                          e.currentTarget.style.transform = 'scale(1.15)';
+                          e.currentTarget.style.background = 'rgba(20, 22, 30, 0.95)';
+                        }}
+                        onMouseOut={(e) => {
+                          e.currentTarget.style.transform = 'scale(1)';
+                          e.currentTarget.style.background = 'rgba(20, 22, 30, 0.85)';
+                        }}
+                      >
+                        <Heart 
+                          size={18} 
+                          color={isInWishlist(food._id) ? 'var(--primary)' : 'var(--text-secondary)'} 
+                          fill={isInWishlist(food._id) ? 'var(--primary)' : 'none'} 
+                          style={{ transition: 'fill 0.2s ease, color 0.2s ease' }}
+                        />
+                      </button>
+                    )}
+
+                    {/* Out of Stock Overlay */}
+                    {food.isAvailable === false && (
+                      <div style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        background: 'rgba(20, 22, 30, 0.7)',
+                        backdropFilter: 'blur(3px)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 5
+                      }}>
+                        <span style={{
+                          background: 'var(--warning-bg)',
+                          color: 'var(--warning)',
+                          border: '1px solid rgba(247, 37, 133, 0.4)',
+                          padding: '8px 16px',
+                          borderRadius: '20px',
+                          fontWeight: 700,
+                          fontSize: '0.85rem',
+                          letterSpacing: '0.05em'
+                        }}>
+                          OUT OF STOCK
+                        </span>
+                      </div>
+                    )}
+
                     <div style={{ position: 'absolute', top: '12px', right: '12px', background: 'rgba(20, 22, 30, 0.8)', padding: '4px 10px', borderRadius: '20px', border: '1px solid var(--border-glass)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <Star size={14} color="var(--star-color)" fill="var(--star-color)" />
                       <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>{food.rating}</span>
@@ -214,14 +339,24 @@ const Home = () => {
                         ${food.price.toFixed(2)}
                       </span>
                       {user?.role !== 'admin' ? (
-                        <button 
-                          onClick={() => addToCart(food)} 
-                          className="btn btn-primary"
-                          style={{ padding: '8px 16px', borderRadius: '8px', gap: '6px', fontSize: '0.85rem' }}
-                        >
-                          <ShoppingCart size={16} />
-                          Add to Cart
-                        </button>
+                        food.isAvailable !== false ? (
+                          <button 
+                            onClick={() => addToCart(food)} 
+                            className="btn btn-primary"
+                            style={{ padding: '8px 16px', borderRadius: '8px', gap: '6px', fontSize: '0.85rem' }}
+                          >
+                            <ShoppingCart size={16} />
+                            Add to Cart
+                          </button>
+                        ) : (
+                          <button 
+                            className="btn btn-secondary"
+                            disabled
+                            style={{ padding: '8px 16px', borderRadius: '8px', gap: '6px', fontSize: '0.85rem', cursor: 'not-allowed', opacity: 0.6 }}
+                          >
+                            Out of Stock
+                          </button>
+                        )
                       ) : (
                         <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontStyle: 'italic', border: '1px solid var(--border-glass)', padding: '6px 12px', borderRadius: '6px', background: 'rgba(255,255,255,0.02)' }}>
                           Admin Preview Mode
@@ -255,16 +390,71 @@ const Home = () => {
         )}
       </section>
 
-      {/* Why Choose Us Section */}
-      <section style={{ background: 'rgba(20, 22, 30, 0.5)', padding: '80px 0', borderTop: '1px solid var(--border-glass)', borderBottom: '1px solid var(--border-glass)', marginBottom: '80px' }}>
+      {/* How it Works Section */}
+      <section id="how-it-works" style={{ padding: '80px 0', marginBottom: '80px' }}>
         <div className="container">
-          <div style={{ textAlign: 'center', marginBottom: '56px' }}>
+          <div className="reveal" style={{ textAlign: 'center', marginBottom: '56px' }}>
+            <span style={{ color: 'var(--primary)', fontWeight: 600, fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.15em', display: 'block', marginBottom: '12px' }}>Simple 3-Step Process</span>
+            <h2 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '8px' }}>How <span className="text-gradient">QuickBite</span> Works</h2>
+            <p style={{ color: 'var(--text-secondary)', maxWidth: '600px', margin: '0 auto' }}>From browsing our menu to taking your first delicious bite, we make the culinary journey effortless.</p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '40px', position: 'relative' }}>
+            {/* Step 1 */}
+            <div className="glass-card reveal-left delay-1" style={{ padding: '40px 30px', textAlign: 'center', background: 'rgba(20, 22, 30, 0.65)', position: 'relative', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+              <div style={{ position: 'absolute', top: '-20px', left: '50%', transform: 'translateX(-50%)', background: 'var(--primary-gradient)', color: '#fff', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '1.2rem', boxShadow: '0 4px 15px rgba(255, 107, 53, 0.4)' }}>
+                1
+              </div>
+              <div style={{ display: 'inline-flex', background: 'var(--primary-light)', padding: '18px', borderRadius: '24px', color: 'var(--primary)', marginBottom: '24px', border: '1px solid rgba(255, 107, 53, 0.15)' }}>
+                <Search size={32} />
+              </div>
+              <h3 style={{ fontSize: '1.35rem', marginBottom: '14px', fontWeight: 700 }}>Browse & Choose</h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: '1.6' }}>
+                Explore our curated gallery of chef-crafted pizzas, burgers, desserts, and cold mocktails. Use filters to find exactly what you crave.
+              </p>
+            </div>
+
+            {/* Step 2 */}
+            <div className="glass-card reveal delay-2" style={{ padding: '40px 30px', textAlign: 'center', background: 'rgba(20, 22, 30, 0.65)', position: 'relative', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+              <div style={{ position: 'absolute', top: '-20px', left: '50%', transform: 'translateX(-50%)', background: 'var(--primary-gradient)', color: '#fff', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '1.2rem', boxShadow: '0 4px 15px rgba(255, 107, 53, 0.4)' }}>
+                2
+              </div>
+              <div style={{ display: 'inline-flex', background: 'rgba(76, 201, 240, 0.15)', padding: '18px', borderRadius: '24px', color: '#4cc9f0', marginBottom: '24px', border: '1px solid rgba(76, 201, 240, 0.15)' }}>
+                <ShoppingCart size={32} />
+              </div>
+              <h3 style={{ fontSize: '1.35rem', marginBottom: '14px', fontWeight: 700 }}>Place Secure Order</h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: '1.6' }}>
+                Add items to your sliding cart, proceed to checkout, and complete your purchase seamlessly through sandbox integrated payment processing.
+              </p>
+            </div>
+
+            {/* Step 3 */}
+            <div className="glass-card reveal-right delay-3" style={{ padding: '40px 30px', textAlign: 'center', background: 'rgba(20, 22, 30, 0.65)', position: 'relative', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+              <div style={{ position: 'absolute', top: '-20px', left: '50%', transform: 'translateX(-50%)', background: 'var(--primary-gradient)', color: '#fff', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '1.2rem', boxShadow: '0 4px 15px rgba(255, 107, 53, 0.4)' }}>
+                3
+              </div>
+              <div style={{ display: 'inline-flex', background: 'rgba(255, 183, 3, 0.15)', padding: '18px', borderRadius: '24px', color: 'var(--star-color)', marginBottom: '24px', border: '1px solid rgba(255, 183, 3, 0.15)' }}>
+                <Truck size={32} />
+              </div>
+              <h3 style={{ fontSize: '1.35rem', marginBottom: '14px', fontWeight: 700 }}>Fast Delivery & Dine</h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: '1.6' }}>
+                Our swift riders dispatch immediately in thermal insulated bags. Enjoy hot, restaurant-quality dishes delivered within 30 minutes!
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Why Choose Us Section */}
+      <section id="features" style={{ background: 'var(--bg-section)', padding: '80px 0', borderTop: '1px solid var(--border-glass)', borderBottom: '1px solid var(--border-glass)', marginBottom: '80px' }}>
+        <div className="container">
+          <div className="reveal" style={{ textAlign: 'center', marginBottom: '56px' }}>
             <h2 style={{ fontSize: '2.2rem', marginBottom: '8px' }}>Why Choose <span className="text-gradient">QuickBite</span>?</h2>
             <p style={{ color: 'var(--text-secondary)' }}>We offer premium delivery operations designed to blow you away</p>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '30px' }}>
-            <div className="glass-card animate-fade-in" style={{ padding: '36px 24px', textAlign: 'center', background: 'var(--bg-glass)' }}>
+            <div className="glass-card reveal-left delay-1" style={{ padding: '36px 24px', textAlign: 'center', background: 'var(--bg-glass)' }}>
               <div style={{ display: 'inline-flex', background: 'var(--primary-light)', padding: '16px', borderRadius: '20px', color: 'var(--primary)', marginBottom: '24px', border: '1px solid rgba(255,107,53,0.1)' }}>
                 <Truck size={32} />
               </div>
@@ -274,7 +464,7 @@ const Home = () => {
               </p>
             </div>
 
-            <div className="glass-card animate-fade-in" style={{ padding: '36px 24px', textAlign: 'center', background: 'var(--bg-glass)' }}>
+            <div className="glass-card reveal delay-2" style={{ padding: '36px 24px', textAlign: 'center', background: 'var(--bg-glass)' }}>
               <div style={{ display: 'inline-flex', background: 'rgba(76, 201, 240, 0.15)', padding: '16px', borderRadius: '20px', color: '#4cc9f0', marginBottom: '24px', border: '1px solid rgba(76, 201, 240, 0.1)' }}>
                 <Utensils size={32} />
               </div>
@@ -284,7 +474,7 @@ const Home = () => {
               </p>
             </div>
 
-            <div className="glass-card animate-fade-in" style={{ padding: '36px 24px', textAlign: 'center', background: 'var(--bg-glass)' }}>
+            <div className="glass-card reveal-right delay-3" style={{ padding: '36px 24px', textAlign: 'center', background: 'var(--bg-glass)' }}>
               <div style={{ display: 'inline-flex', background: 'rgba(255, 183, 3, 0.15)', padding: '16px', borderRadius: '20px', color: 'var(--star-color)', marginBottom: '24px', border: '1px solid rgba(255, 183, 3, 0.1)' }}>
                 <ShieldCheck size={32} />
               </div>
@@ -297,16 +487,112 @@ const Home = () => {
         </div>
       </section>
 
+      {/* About Us Section */}
+      <section id="about-us" style={{ padding: '80px 0', borderTop: '1px solid var(--border-glass)', marginBottom: '80px' }}>
+        <div className="container">
+          <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '56px', alignItems: 'center' }}>
+            
+            {/* Left Column - Text Content */}
+            <div className="reveal-left" style={{ flex: '1 1 400px' }}>
+              <span style={{ color: 'var(--primary)', fontWeight: 600, fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.15em', display: 'block', marginBottom: '12px' }}>Our Story</span>
+              <h2 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '24px', lineHeight: '1.2' }}>
+                Crafting Premium <span className="text-gradient">Culinary Experiences</span>
+              </h2>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', lineHeight: '1.7', marginBottom: '24px' }}>
+                At QuickBite, we believe that fast food shouldn't mean compromised quality. Our journey began with a simple mission: to bridge the gap between elite, restaurant-grade fine dining and ultimate home convenience. 
+              </p>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '1.02rem', lineHeight: '1.7', marginBottom: '36px' }}>
+                We partner with handpicked local organic growers to ensure only the crispest, freshest ingredients enter our kitchen. Every recipe is meticulously designed and prepared by executive master chefs, guaranteeing a gourmet delight in every order.
+              </p>
+              
+              {/* Stats Grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+                <div className="glass-card" style={{ padding: '16px', textAlign: 'center', background: 'rgba(20, 22, 30, 0.5)' }}>
+                  <h4 style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--primary)', marginBottom: '4px' }}>15k+</h4>
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 500 }}>Diners Served</p>
+                </div>
+                <div className="glass-card" style={{ padding: '16px', textAlign: 'center', background: 'rgba(20, 22, 30, 0.5)' }}>
+                  <h4 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#4cc9f0', marginBottom: '4px' }}>50+</h4>
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 500 }}>Expert Chefs</p>
+                </div>
+                <div className="glass-card" style={{ padding: '16px', textAlign: 'center', background: 'rgba(20, 22, 30, 0.5)' }}>
+                  <h4 style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--star-color)', marginBottom: '4px' }}>25m</h4>
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 500 }}>Avg Delivery</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column - Premium Collage / Graphic */}
+            <div className="reveal-right" style={{ flex: '1 1 300px', position: 'relative', display: 'flex', justifyContent: 'center' }}>
+              {/* Radial gradient backing glow */}
+              <div style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: '120%',
+                height: '120%',
+                background: 'radial-gradient(circle, rgba(255, 107, 53, 0.08) 0%, transparent 60%)',
+                zIndex: 0,
+                pointerEvents: 'none'
+              }} />
+
+              {/* Main Image Container */}
+              <div style={{
+                position: 'relative',
+                zIndex: 1,
+                borderRadius: '24px',
+                overflow: 'hidden',
+                boxShadow: '0 25px 60px rgba(0, 0, 0, 0.6)',
+                border: '4px solid rgba(255, 255, 255, 0.08)',
+                width: '100%',
+                maxWidth: '450px',
+                height: '420px'
+              }}>
+                <img 
+                  src="https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=800&auto=format&fit=crop&q=80" 
+                  alt="Elite Chef plating food" 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+                
+                {/* Glass Badge Overlay */}
+                <div style={{
+                  position: 'absolute',
+                  bottom: '24px',
+                  right: '24px',
+                  background: 'rgba(20, 22, 30, 0.85)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
+                  padding: '12px 24px',
+                  borderRadius: '16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  boxShadow: '0 10px 25px rgba(0, 0, 0, 0.4)'
+                }}>
+                  <Sparkles size={18} color="var(--primary)" fill="var(--primary)" />
+                  <div>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', fontWeight: 500, textTransform: 'uppercase' }}>Gourmet Standard</span>
+                    <span style={{ fontSize: '0.95rem', color: '#fff', fontWeight: 700 }}>Est. 2026</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
       {/* Buyer Reviews Section */}
       <section className="container" style={{ marginBottom: '80px' }}>
-        <div style={{ textAlign: 'center', marginBottom: '56px' }}>
+        <div className="reveal" style={{ textAlign: 'center', marginBottom: '56px' }}>
           <h2 style={{ fontSize: '2.2rem', marginBottom: '8px' }}>What Our <span className="text-gradient">Customers Say</span></h2>
           <p style={{ color: 'var(--text-secondary)' }}>Read reviews from verified gourmet diners</p>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '30px' }}>
-          {REVIEWS.map(review => (
-            <div key={review.id} className="glass-card" style={{ padding: '30px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '220px' }}>
+          {REVIEWS.map((review, index) => (
+            <div key={review.id} className={`glass-card reveal delay-${index + 1}`} style={{ padding: '30px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '220px' }}>
               <div style={{ marginBottom: '20px' }}>
                 {/* Stars */}
                 <div style={{ display: 'flex', gap: '4px', marginBottom: '14px' }}>
@@ -332,7 +618,7 @@ const Home = () => {
                   style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--border-glass)' }} 
                 />
                 <div>
-                  <h4 style={{ fontSize: '0.95rem', fontWeight: 600, color: '#fff' }}>{review.name}</h4>
+                  <h4 style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-primary)' }}>{review.name}</h4>
                   <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{review.role}</p>
                 </div>
               </div>
@@ -343,39 +629,108 @@ const Home = () => {
 
       {/* Newsletter Section */}
       <section className="container">
-        <div className="glass-panel" style={{ 
-          padding: '60px 40px', 
+        <div className="glass-panel reveal" style={{ 
+          padding: '80px 48px', 
           textAlign: 'center',
-          background: 'linear-gradient(135deg, rgba(255, 107, 53, 0.08) 0%, rgba(11, 12, 16, 0.8) 100%)',
-          border: '1px solid rgba(255, 107, 53, 0.2)',
-          borderRadius: '24px',
-          boxShadow: 'var(--shadow-glow)'
+          background: 'radial-gradient(circle at 10% 20%, rgba(76, 201, 240, 0.08) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(255, 107, 53, 0.08) 0%, transparent 40%), rgba(20, 22, 30, 0.65)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          borderRadius: '32px',
+          boxShadow: '0 24px 80px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+          position: 'relative',
+          overflow: 'hidden'
         }}>
-          <div style={{ maxWidth: '600px', margin: '0 auto' }}>
-            <div style={{ display: 'inline-flex', background: 'var(--primary-light)', padding: '12px', borderRadius: '50%', color: 'var(--primary)', marginBottom: '20px' }}>
-              <Mail size={24} />
+          {/* Ambient decorative glows */}
+          <div style={{
+            position: 'absolute',
+            top: '-50px',
+            right: '-50px',
+            width: '200px',
+            height: '200px',
+            background: 'var(--primary)',
+            filter: 'blur(100px)',
+            opacity: 0.15,
+            pointerEvents: 'none'
+          }} />
+          <div style={{
+            position: 'absolute',
+            bottom: '-50px',
+            left: '-50px',
+            width: '200px',
+            height: '200px',
+            background: '#4cc9f0',
+            filter: 'blur(100px)',
+            opacity: 0.15,
+            pointerEvents: 'none'
+          }} />
+
+          <div style={{ maxWidth: '620px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
+            <div style={{ 
+              display: 'inline-flex', 
+              background: 'linear-gradient(135deg, rgba(255, 107, 53, 0.15) 0%, rgba(76, 201, 240, 0.15) 100%)', 
+              border: '1px solid rgba(255, 255, 255, 0.12)', 
+              padding: '18px', 
+              borderRadius: '24px', 
+              color: 'var(--primary)', 
+              marginBottom: '28px',
+              boxShadow: '0 10px 25px rgba(0, 0, 0, 0.3)'
+            }}>
+              <Mail size={32} style={{ color: '#fff' }} />
             </div>
-            <h2 style={{ fontSize: '2rem', marginBottom: '12px', color: '#fff' }}>Join the Foodie Club</h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', marginBottom: '32px', lineHeight: '1.6' }}>
+            
+            <h2 style={{ fontSize: '2.4rem', fontWeight: 800, marginBottom: '16px', color: '#fff', letterSpacing: '-0.03em' }}>
+              Join the <span className="text-gradient">Foodie Club</span>
+            </h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', marginBottom: '36px', lineHeight: '1.6', fontWeight: 400 }}>
               Subscribe to our weekly newsletter for exclusive discounts, gourmet culinary updates, and chef recommendation recipes.
             </p>
 
             {isSubscribed ? (
-              <div className="glass-panel animate-fade-in" style={{ padding: '16px 24px', background: 'rgba(76, 201, 240, 0.12)', border: '1px solid rgba(76, 201, 240, 0.3)', color: '#4cc9f0', fontWeight: 600, borderRadius: '12px' }}>
+              <div className="glass-panel animate-fade-in" style={{ padding: '20px 28px', background: 'rgba(76, 201, 240, 0.12)', border: '1px solid rgba(76, 201, 240, 0.3)', color: '#4cc9f0', fontWeight: 600, borderRadius: '16px' }}>
                 🎉 Awesome! You are now subscribed. Check your email for a 20% discount coupon!
               </div>
             ) : (
-              <form onSubmit={handleNewsletterSubmit} style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
+              <form onSubmit={handleNewsletterSubmit} style={{ 
+                display: 'flex', 
+                gap: '8px', 
+                alignItems: 'center',
+                background: 'rgba(0, 0, 0, 0.25)', 
+                padding: '6px 6px 6px 16px', 
+                borderRadius: '16px', 
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.2)',
+                maxWidth: '520px',
+                margin: '0 auto',
+                flexWrap: 'nowrap'
+              }}>
                 <input 
                   type="email" 
                   placeholder="Enter your email address"
                   value={newsletterEmail}
                   onChange={(e) => setNewsletterEmail(e.target.value)}
-                  className="glass-input"
-                  style={{ flexGrow: 1, minWidth: '240px', maxWidth: '380px' }}
+                  style={{ 
+                    flexGrow: 1, 
+                    background: 'transparent',
+                    border: 'none',
+                    outline: 'none',
+                    color: '#fff',
+                    fontSize: '0.95rem',
+                    padding: '8px 0',
+                    width: '100%'
+                  }}
                   required
                 />
-                <button type="submit" className="btn btn-primary" style={{ padding: '12px 30px' }}>
+                <button type="submit" className="btn btn-primary" style={{ 
+                  padding: '12px 28px', 
+                  borderRadius: '12px',
+                  fontWeight: 600,
+                  fontSize: '0.95rem',
+                  whiteSpace: 'nowrap',
+                  boxShadow: '0 4px 15px rgba(255, 107, 53, 0.3)',
+                  transition: 'all 0.2s ease-in-out'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                >
                   Subscribe
                 </button>
               </form>

@@ -152,6 +152,29 @@ const AdminDashboard = () => {
     }
   };
 
+  // Handle Toggle Availability (Out of Stock / Available)
+  const handleToggleAvailability = async (food) => {
+    try {
+      const token = localStorage.getItem('quickbite_token');
+      const updatedStatus = food.isAvailable === false ? true : false;
+      const response = await fetch(`http://localhost:5005/api/foods/${food._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ isAvailable: updatedStatus })
+      });
+      if (response.ok) {
+        const updatedFood = await response.json();
+        setFoods(prev => prev.map(f => f._id === food._id ? updatedFood : f));
+      }
+    } catch (err) {
+      console.error('Failed to toggle food availability:', err);
+      setFoods(prev => prev.map(f => f._id === food._id ? { ...f, isAvailable: f.isAvailable === false ? true : false } : f));
+    }
+  };
+
   const handleStartEdit = (food) => {
     setEditingFoodId(food._id);
     setNewItemName(food.name);
@@ -181,7 +204,8 @@ const AdminDashboard = () => {
       price: parseFloat(newItemPrice),
       category: newItemCategory,
       image: newItemImage,
-      description: newItemDescription || 'Premium selection prepared with fresh, organic ingredients by our executive chefs.'
+      description: newItemDescription || 'Premium selection prepared with fresh, organic ingredients by our executive chefs.',
+      isAvailable: editingFoodId ? (foods.find(f => f._id === editingFoodId)?.isAvailable !== false) : true
     };
 
     if (editingFoodId) {
@@ -318,12 +342,14 @@ const AdminDashboard = () => {
         {/* TAB 1: OVERVIEW */}
         {activeTab === 'Overview' && (
           <div>
-            <h2 style={{ fontSize: '2rem', marginBottom: '8px' }}>Dashboard <span className="text-gradient">Overview</span></h2>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '32px' }}>Real-time indicators and operational summary</p>
+            <div className="animate-slide-up" style={{ marginBottom: '32px' }}>
+              <h2 style={{ fontSize: '2rem', marginBottom: '8px' }}>Dashboard <span className="text-gradient">Overview</span></h2>
+              <p style={{ color: 'var(--text-secondary)' }}>Real-time indicators and operational summary</p>
+            </div>
 
             {/* KPI Cards */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '24px', marginBottom: '40px' }}>
-              <div className="glass-panel" style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '20px' }}>
+              <div className="glass-panel animate-slide-up" style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '20px' }}>
                 <div style={{ background: 'var(--success-bg)', padding: '16px', borderRadius: '16px' }}>
                   <DollarSign size={24} color="var(--success)" />
                 </div>
@@ -333,7 +359,7 @@ const AdminDashboard = () => {
                 </div>
               </div>
 
-              <div className="glass-panel" style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '20px' }}>
+              <div className="glass-panel animate-slide-up animation-delay-1" style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '20px' }}>
                 <div style={{ background: 'var(--primary-light)', padding: '16px', borderRadius: '16px' }}>
                   <ShoppingBag size={24} color="var(--primary)" />
                 </div>
@@ -343,7 +369,7 @@ const AdminDashboard = () => {
                 </div>
               </div>
 
-              <div className="glass-panel" style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '20px' }}>
+              <div className="glass-panel animate-slide-up animation-delay-2" style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '20px' }}>
                 <div style={{ background: 'rgba(255, 183, 3, 0.15)', padding: '16px', borderRadius: '16px' }}>
                   <RefreshCw size={24} color="var(--star-color)" />
                 </div>
@@ -353,7 +379,7 @@ const AdminDashboard = () => {
                 </div>
               </div>
 
-              <div className="glass-panel" style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '20px' }}>
+              <div className="glass-panel animate-slide-up animation-delay-3" style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '20px' }}>
                 <div style={{ background: 'rgba(76, 201, 240, 0.15)', padding: '16px', borderRadius: '16px' }}>
                   <Users size={24} color="#4cc9f0" />
                 </div>
@@ -365,7 +391,7 @@ const AdminDashboard = () => {
             </div>
 
             {/* Quick Summary Grid */}
-            <div className="glass-panel" style={{ padding: '24px' }}>
+            <div className="glass-panel reveal delay-4" style={{ padding: '24px' }}>
               <h4 style={{ fontSize: '1.1rem', marginBottom: '16px' }}>System Status</h4>
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>All services are online. Connected to PayHere Sandbox Gateway. Ready to process ordering webhooks.</p>
             </div>
@@ -375,10 +401,12 @@ const AdminDashboard = () => {
         {/* TAB 2: MANAGE ORDERS */}
         {activeTab === 'Manage Orders' && (
           <div>
-            <h2 style={{ fontSize: '2rem', marginBottom: '8px' }}>Manage <span className="text-gradient">Orders</span></h2>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '32px' }}>Track payments and update production status</p>
+            <div className="animate-slide-up" style={{ marginBottom: '32px' }}>
+              <h2 style={{ fontSize: '2rem', marginBottom: '8px' }}>Manage <span className="text-gradient">Orders</span></h2>
+              <p style={{ color: 'var(--text-secondary)' }}>Track payments and update production status</p>
+            </div>
 
-            <div className="glass-panel" style={{ overflowX: 'auto', borderRadius: '16px' }}>
+            <div className="glass-panel reveal delay-1" style={{ overflowX: 'auto', borderRadius: '16px' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '700px' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border-glass)' }}>
@@ -439,13 +467,15 @@ const AdminDashboard = () => {
         {/* TAB 3: MANAGE FOOD ITEMS */}
         {activeTab === 'Manage Food Items' && (
           <div>
-            <h2 style={{ fontSize: '2rem', marginBottom: '8px' }}>Manage <span className="text-gradient">Food Items</span></h2>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '32px' }}>Add new dishes and edit current menu listings</p>
+            <div className="animate-slide-up" style={{ marginBottom: '32px' }}>
+              <h2 style={{ fontSize: '2rem', marginBottom: '8px' }}>Manage <span className="text-gradient">Food Items</span></h2>
+              <p style={{ color: 'var(--text-secondary)' }}>Add new dishes and edit current menu listings</p>
+            </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '30px', alignItems: 'flex-start' }} className="admin-food-grid">
               
               {/* Food Catalog List */}
-              <div className="glass-panel" style={{ padding: '24px' }}>
+              <div className="glass-panel reveal delay-1" style={{ padding: '24px' }}>
                 <h4 style={{ marginBottom: '20px' }}>Current Menu Items ({foods.length})</h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   {foods.map(food => (
@@ -456,6 +486,49 @@ const AdminDashboard = () => {
                         <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{food.category}</div>
                       </div>
                       <div style={{ fontWeight: 700, color: 'var(--primary)' }}>${food.price.toFixed(2)}</div>
+                      
+                      {/* Availability Toggle Switch */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <button
+                          type="button"
+                          onClick={() => handleToggleAvailability(food)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            padding: '4px 8px',
+                            borderRadius: '8px',
+                            transition: 'all 0.2s ease',
+                          }}
+                        >
+                          <div style={{
+                            width: '36px',
+                            height: '18px',
+                            background: food.isAvailable !== false ? 'var(--primary)' : 'var(--text-muted)',
+                            borderRadius: '9px',
+                            position: 'relative',
+                            transition: 'background 0.3s ease'
+                          }}>
+                            <div style={{
+                              width: '14px',
+                              height: '14px',
+                              background: '#fff',
+                              borderRadius: '50%',
+                              position: 'absolute',
+                              top: '2px',
+                              left: food.isAvailable !== false ? '20px' : '2px',
+                              transition: 'left 0.3s ease'
+                            }} />
+                          </div>
+                          <span style={{ fontSize: '0.8rem', fontWeight: 600, color: food.isAvailable !== false ? 'var(--success)' : 'var(--warning)', whiteSpace: 'nowrap' }}>
+                            {food.isAvailable !== false ? 'Available' : 'Out of Stock'}
+                          </span>
+                        </button>
+                      </div>
+
                       <div style={{ display: 'flex', gap: '8px' }}>
                         <button 
                           onClick={() => handleStartEdit(food)}
@@ -480,7 +553,7 @@ const AdminDashboard = () => {
               </div>
 
               {/* Add / Edit Food Form */}
-              <div className="glass-panel" style={{ padding: '24px' }}>
+              <div className="glass-panel reveal delay-2" style={{ padding: '24px' }}>
                 <h4 style={{ marginBottom: '20px' }}>{editingFoodId ? 'Edit Food Item' : 'Add Food Item'}</h4>
                 <form onSubmit={handleSaveFood} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   

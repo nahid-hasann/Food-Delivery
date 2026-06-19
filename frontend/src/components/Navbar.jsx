@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { ShoppingBag, Menu as MenuIcon, X, User, LogOut, Flame, LayoutDashboard } from 'lucide-react';
+import { ShoppingBag, Menu as MenuIcon, X, User, LogOut, Flame, LayoutDashboard, Heart, UserCircle } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 
@@ -12,6 +12,12 @@ const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
 
+  // Revert light theme overrides
+  useEffect(() => {
+    document.body.classList.remove('light-theme');
+    localStorage.removeItem('quickbite_theme');
+  }, []);
+
   const isActive = (path) => location.pathname === path;
 
   const handleLogout = () => {
@@ -19,6 +25,27 @@ const Navbar = () => {
     setIsProfileDropdownOpen(false);
     setIsMobileMenuOpen(false);
     navigate('/');
+  };
+
+  const handleScrollLink = (sectionId) => {
+    setIsMobileMenuOpen(false);
+    if (location.pathname === '/') {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        const offset = 90;
+        const bodyRect = document.body.getBoundingClientRect().top;
+        const elementRect = element.getBoundingClientRect().top;
+        const elementPosition = elementRect - bodyRect;
+        const offsetPosition = elementPosition - offset;
+        
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        });
+      }
+    } else {
+      navigate('/', { state: { scrollTo: sectionId } });
+    }
   };
 
   return (
@@ -34,7 +61,7 @@ const Navbar = () => {
             Quick<span className="text-gradient">Bite</span>
           </span>
         </Link>
-
+        
         {/* Desktop Menu Links */}
         <div style={{ display: 'none', gap: '32px', alignItems: 'center' }} className="desktop-menu">
           <Link to="/" style={{ fontWeight: 500, position: 'relative', color: isActive('/') ? 'var(--primary)' : 'var(--text-secondary)' }} className="nav-link">
@@ -45,7 +72,61 @@ const Navbar = () => {
             Menu
             {isActive('/menu') && <span className="nav-link-indicator" />}
           </Link>
-          {user && (
+          <button 
+            onClick={() => handleScrollLink('features')} 
+            style={{ 
+              background: 'none', 
+              border: 'none', 
+              padding: 0, 
+              cursor: 'pointer', 
+              fontFamily: 'inherit', 
+              fontSize: '1rem',
+              fontWeight: 500, 
+              position: 'relative', 
+              color: 'var(--text-secondary)',
+              transition: 'var(--transition-fast)'
+            }} 
+            className="nav-link"
+          >
+            Features
+          </button>
+          <button 
+            onClick={() => handleScrollLink('how-it-works')} 
+            style={{ 
+              background: 'none', 
+              border: 'none', 
+              padding: 0, 
+              cursor: 'pointer', 
+              fontFamily: 'inherit', 
+              fontSize: '1rem',
+              fontWeight: 500, 
+              position: 'relative', 
+              color: 'var(--text-secondary)',
+              transition: 'var(--transition-fast)'
+            }} 
+            className="nav-link"
+          >
+            How it Works
+          </button>
+          <button 
+            onClick={() => handleScrollLink('about-us')} 
+            style={{ 
+              background: 'none', 
+              border: 'none', 
+              padding: 0, 
+              cursor: 'pointer', 
+              fontFamily: 'inherit', 
+              fontSize: '1rem',
+              fontWeight: 500, 
+              position: 'relative', 
+              color: 'var(--text-secondary)',
+              transition: 'var(--transition-fast)'
+            }} 
+            className="nav-link"
+          >
+            About Us
+          </button>
+          {user && user.role !== 'admin' && (
             <Link to="/my-orders" style={{ fontWeight: 500, position: 'relative', color: isActive('/my-orders') ? 'var(--primary)' : 'var(--text-secondary)' }} className="nav-link">
               My Orders
               {isActive('/my-orders') && <span className="nav-link-indicator" />}
@@ -62,8 +143,6 @@ const Navbar = () => {
 
         {/* Action Buttons */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          
-          {/* Cart Trigger */}
           {user?.role !== 'admin' && (
             <button 
               className="btn btn-glass btn-circle" 
@@ -128,15 +207,39 @@ const Navbar = () => {
                         Admin Panel
                       </Link>
                     )}
-                    <Link 
-                      to="/my-orders" 
-                      className="dropdown-item" 
-                      style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px', borderRadius: '8px', fontSize: '0.9rem' }}
-                      onClick={() => setIsProfileDropdownOpen(false)}
-                    >
-                      <ShoppingBag size={16} />
-                      My Orders
-                    </Link>
+                    {user.role !== 'admin' && (
+                      <Link 
+                        to="/wishlist" 
+                        className="dropdown-item" 
+                        style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px', borderRadius: '8px', fontSize: '0.9rem' }}
+                        onClick={() => setIsProfileDropdownOpen(false)}
+                      >
+                        <Heart size={16} color="var(--primary)" fill="var(--primary)" />
+                        My Favorites
+                      </Link>
+                    )}
+                    {user.role !== 'admin' && (
+                      <Link 
+                        to="/my-orders" 
+                        className="dropdown-item" 
+                        style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px', borderRadius: '8px', fontSize: '0.9rem' }}
+                        onClick={() => setIsProfileDropdownOpen(false)}
+                      >
+                        <ShoppingBag size={16} />
+                        My Orders
+                      </Link>
+                    )}
+                    {user.role !== 'admin' && (
+                      <Link 
+                        to="/profile" 
+                        className="dropdown-item" 
+                        style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px', borderRadius: '8px', fontSize: '0.9rem' }}
+                        onClick={() => setIsProfileDropdownOpen(false)}
+                      >
+                        <UserCircle size={16} />
+                        My Profile
+                      </Link>
+                    )}
                     <button 
                       onClick={handleLogout} 
                       className="dropdown-item" 
@@ -201,9 +304,77 @@ const Navbar = () => {
               <Link to="/menu" style={{ fontSize: '1.1rem', fontWeight: 600, color: isActive('/menu') ? 'var(--primary)' : 'var(--text-primary)' }} onClick={() => setIsMobileMenuOpen(false)}>
                 Menu
               </Link>
-              {user && (
+              <button 
+                onClick={() => handleScrollLink('features')} 
+                style={{ 
+                  background: 'none', 
+                  border: 'none', 
+                  padding: 0, 
+                  textAlign: 'left',
+                  cursor: 'pointer', 
+                  fontFamily: 'inherit', 
+                  fontSize: '1.1rem', 
+                  fontWeight: 600, 
+                  color: 'var(--text-primary)',
+                  transition: 'var(--transition-fast)'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.color = 'var(--primary)'}
+                onMouseOut={(e) => e.currentTarget.style.color = 'var(--text-primary)'}
+              >
+                Features
+              </button>
+              <button 
+                onClick={() => handleScrollLink('how-it-works')} 
+                style={{ 
+                  background: 'none', 
+                  border: 'none', 
+                  padding: 0, 
+                  textAlign: 'left',
+                  cursor: 'pointer', 
+                  fontFamily: 'inherit', 
+                  fontSize: '1.1rem', 
+                  fontWeight: 600, 
+                  color: 'var(--text-primary)',
+                  transition: 'var(--transition-fast)'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.color = 'var(--primary)'}
+                onMouseOut={(e) => e.currentTarget.style.color = 'var(--text-primary)'}
+              >
+                How it Works
+              </button>
+              <button 
+                onClick={() => handleScrollLink('about-us')} 
+                style={{ 
+                  background: 'none', 
+                  border: 'none', 
+                  padding: 0, 
+                  textAlign: 'left',
+                  cursor: 'pointer', 
+                  fontFamily: 'inherit', 
+                  fontSize: '1.1rem', 
+                  fontWeight: 600, 
+                  color: 'var(--text-primary)',
+                  transition: 'var(--transition-fast)'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.color = 'var(--primary)'}
+                onMouseOut={(e) => e.currentTarget.style.color = 'var(--text-primary)'}
+              >
+                About Us
+              </button>
+              {user && user.role !== 'admin' && (
                 <Link to="/my-orders" style={{ fontSize: '1.1rem', fontWeight: 600, color: isActive('/my-orders') ? 'var(--primary)' : 'var(--text-primary)' }} onClick={() => setIsMobileMenuOpen(false)}>
                   My Orders
+                </Link>
+              )}
+              {user && user.role !== 'admin' && (
+                <Link to="/wishlist" style={{ fontSize: '1.1rem', fontWeight: 600, color: isActive('/wishlist') ? 'var(--primary)' : 'var(--text-primary)' }} onClick={() => setIsMobileMenuOpen(false)}>
+                  My Favorites
+                </Link>
+              )}
+              {user && user.role !== 'admin' && (
+                <Link to="/profile" style={{ fontSize: '1.1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', color: isActive('/profile') ? 'var(--primary)' : 'var(--text-primary)' }} onClick={() => setIsMobileMenuOpen(false)}>
+                  <UserCircle size={18} />
+                  My Profile
                 </Link>
               )}
               {user?.role === 'admin' && (

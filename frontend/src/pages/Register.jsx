@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 const Register = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -36,7 +37,7 @@ const Register = () => {
 
   return (
     <div className="container flex-center animate-fade-in" style={{ minHeight: 'calc(100vh - 160px)', paddingTop: '40px', paddingBottom: '40px' }}>
-      <div className="glass-panel" style={{ width: '100%', maxWidth: '450px', padding: '40px', boxShadow: 'var(--shadow-lg)' }}>
+      <div className="glass-panel reveal" style={{ width: '100%', maxWidth: '450px', padding: '40px', boxShadow: 'var(--shadow-lg)' }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <h2 style={{ fontSize: '2rem', marginBottom: '8px' }}>Create <span className="text-gradient">Account</span></h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Join QuickBite for express food delivery</p>
