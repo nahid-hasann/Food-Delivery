@@ -118,6 +118,5 @@ Supports two checkout actions:
     > To test successful online payments, use the following sandbox card numbers:
     > - **Visa:** `4916217501611292`
     > - **MasterCard:** `5307732125531191`
-    > - **AMEX:** `346781005510225`
     > - **CVV / Expiry Date:** Any valid future date and random 3-digit CVV.
 *   **Cash on Delivery (COD)**: Instantly processes orders and registers them as unpaid, making the order lifecycle realistic for local food delivery.
