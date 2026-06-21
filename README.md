@@ -1,5 +1,8 @@
 # 🍔 QuickBite — Premium Food Delivery Web Application
 
+**🌐 Live Demo (Frontend):** [https://food-delivery-lemon-psi.vercel.app/](https://food-delivery-lemon-psi.vercel.app/)  
+**⚙️ Backend API:** [https://food-delivery-qz0o.onrender.com/](https://food-delivery-qz0o.onrender.com/)
+
 QuickBite is a state-of-the-art, full-stack food delivery application designed with a **premium dark glassmorphic UI**, fluid CSS-only animations, and seamless order management workflows.
 
 ---
