@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Trash2, Plus, Minus, CreditCard, ShoppingBag, ArrowRight } from 'lucide-react';
+import { X, Trash2, Plus, Minus, CreditCard, ShoppingBag, ArrowRight, Copy } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -19,6 +19,11 @@ const CartSidebar = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isDemoMode, setIsDemoMode] = useState(true);
   const [paymentMethod, setPaymentMethod] = useState('Card');
+
+  const handleCopy = (text) => {
+    navigator.clipboard.writeText(text);
+    showToast('Card number copied to clipboard!', 'success');
+  };
 
   if (!isCartOpen || user?.role === 'admin') return null;
 
@@ -310,8 +315,14 @@ const CartSidebar = () => {
                     {!isDemoMode && (
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.05)', padding: '10px', borderRadius: '8px', marginBottom: '12px', border: '1px solid var(--border-glass)' }}>
                         <strong>Sandbox Test Cards:</strong><br/>
-                        Visa: <code style={{color: 'var(--primary)'}}>4916217501611292</code><br/>
-                        MasterCard: <code style={{color: 'var(--primary)'}}>5307732125531191</code><br/>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: '4px 0' }}>
+                          <span>Visa: <code style={{color: 'var(--primary)'}}>4916217501611292</code></span>
+                          <button type="button" onClick={() => handleCopy('4916217501611292')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex' }} title="Copy Visa"><Copy size={12} /></button>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: '4px 0 6px' }}>
+                          <span>MasterCard: <code style={{color: 'var(--primary)'}}>5307732125531191</code></span>
+                          <button type="button" onClick={() => handleCopy('5307732125531191')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex' }} title="Copy MasterCard"><Copy size={12} /></button>
+                        </div>
                         <span style={{fontSize: '0.7rem', opacity: 0.8}}>(Use any future expiry date & CVV)</span>
                       </div>
                     )}
